@@ -1,0 +1,849 @@
+// ============================================
+// ETCHI BACKEND - ESTRUTURA COMPLETA
+// ============================================
+
+// ============================================
+// 1. PRISMA SCHEMA COMPLETO (prisma/schema.prisma)
+// ============================================
+
+/*
+generator client {
+provider = “prisma-client-js”
+}
+
+datasource db {
+provider = “postgresql”
+url      = env(“DATABASE_URL”)
+}
+
+// ===== USUÁRIOS =====
+model User {
+id        String   @id @default(cuid())
+email     String   @unique
+phone     String   @unique
+password  String
+name      String
+userType  UserType @default(CUSTOMER)
+isActive  Boolean  @default(true)
+isVerified Boolean @default(false)
+
+// Profile pictures
+profilePhoto String?
+
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+
+// Relações
+delivererProfile DelivererProfile?
+ordersAsSender   Order[]           @relation(“OrderSender”)
+ordersAsReceiver Order[]           @relation(“OrderReceiver”)
+notifications    Notification[]
+ratings          Rating[]
+payments         Payment[]
+
+@@map(“users”)
+}
+
+// ===== PERFIL DO ENTREGADOR =====
+model DelivererProfile {
+id     String @id @default(cuid())
+userId String @unique
+user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+// Documentos
+biNumber          String   @unique // Bilhete de Identidade
+licenseNumber     String   @unique
+licenseExpiry     DateTime
+transportLicense  String?  // Para veículos comerciais
+vehicleInsurance  String
+insuranceExpiry   DateTime
+
+// Fotos
+biPhoto           String
+licensePhoto      String
+vehiclePhoto      String
+profilePhoto      String
+
+// Veículo
+vehicleType       VehicleType
+vehiclePlate      String   @unique
+vehicleBrand      String
+vehicleModel      String
+vehicleYear       Int
+maxWeight         Float    // em kg
+maxVolume         Float    // em litros
+
+// Performance
+rating            Float    @default(5.0)
+totalDeliveries   Int      @default(0)
+completedDeliveries Int    @default(0)
+cancelledDeliveries Int    @default(0)
+
+// Status
+isActive          Boolean  @default(false) // Admin approval
+isAvailable       Boolean  @default(false)
+isOnline          Boolean  @default(false)
+
+// Localização atual
+currentLat        Float?
+currentLng        Float?
+lastSeen          DateTime?
+
+// Verificação
+backgroundCheckStatus BackgroundCheckStatus @default(PENDING)
+backgroundCheckDate   DateTime?
+verifiedAt            DateTime?
+verifiedBy            String?
+
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+
+// Relações
+deliveries        Delivery[]
+availabilityZones DelivererZone[]
+receivedRatings   Rating[]       @relation(“DelivererRatings”)
+
+@@map(“deliverer_profiles”)
+}
+
+// ===== ZONAS DE DISPONIBILIDADE DO ENTREGADOR =====
+model DelivererZone {
+id           String @id @default(cuid())
+delivererId  String
+deliverer    DelivererProfile @relation(fields: [delivererId], references: [id], onDelete: Cascade)
+
+zoneName     String
+centerLat    Float
+centerLng    Float
+radiusKm     Float
+isPreferred  Boolean @default(false)
+
+createdAt DateTime @default(now())
+
+@@map(“deliverer_zones”)
+}
+
+// ===== PEDIDOS =====
+model Order {
+id          String @id @default(cuid())
+
+// Remetente e Destinatário
+senderId    String
+sender      User   @relation(“OrderSender”, fields: [senderId], references: [id])
+receiverId  String?
+receiver    User?  @relation(“OrderReceiver”, fields: [receiverId], references: [id])
+
+// Informações do Destinatário (se não cadastrado)
+receiverName  String?
+receiverPhone String?
+receiverEmail String?
+
+// Origem
+pickupType         PickupType @default(ADDRESS)
+pickupAddress      String
+pickupLat          Float
+pickupLng          Float
+pickupPointId      String?
+pickupPoint        PickupPoint? @relation(“PickupOrders”, fields: [pickupPointId], references: [id])
+pickupInstructions String?
+pickupContactName  String?
+pickupContactPhone String?
+
+// Destino
+deliveryType         DeliveryType @default(ADDRESS)
+deliveryAddress      String
+deliveryLat          Float
+deliveryLng          Float
+deliveryPointId      String?
+deliveryPoint        PickupPoint? @relation(“DeliveryOrders”, fields: [deliveryPointId], references: [id])
+deliveryInstructions String?
+
+// Detalhes do Pacote
+description        String
+packageContents    String
+weight             Float    // em kg
+dimensions         String   // JSON: {length, width, height}
+packageSize        PackageSize
+isFragile          Boolean  @default(false)
+declaredValue      Float?
+packagePhoto       String?
+
+// Agendamento
+scheduledPickupTime   DateTime?
+desiredDeliveryTime   DateTime?
+deliverySpeed         DeliverySpeed @default(STANDARD)
+
+// Pricing
+distanceKm         Float
+basePrice          Float
+urgencyFee         Float    @default(0)
+insuranceFee       Float    @default(0)
+platformFee        Float
+finalPrice         Float
+delivererEarnings  Float
+
+// Status
+status             OrderStatus @default(PENDING)
+
+// Códigos de Confirmação
+pickupCode         String   @unique
+deliveryCode       String   @unique
+
+// Tracking
+estimatedDuration  Int?     // em minutos
+
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+
+// Relações
+delivery      Delivery?
+statusHistory OrderStatusHistory[]
+payment       Payment?
+
+@@map(“orders”)
+}
+
+// ===== HISTÓRICO DE STATUS DO PEDIDO =====
+model OrderStatusHistory {
+id        String @id @default(cuid())
+orderId   String
+order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+status    OrderStatus
+notes     String?
+location  String? // JSON: {lat, lng}
+
+createdAt DateTime @default(now())
+
+@@map(“order_status_history”)
+}
+
+// ===== ENTREGAS =====
+model Delivery {
+id           String @id @default(cuid())
+orderId      String @unique
+order        Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+delivererId  String
+deliverer    DelivererProfile @relation(fields: [delivererId], references: [id])
+
+// Timestamps importantes
+acceptedAt   DateTime?
+arrivedAtPickupAt DateTime?
+pickedUpAt   DateTime?
+arrivedAtDeliveryAt DateTime?
+deliveredAt  DateTime?
+
+// Tracking
+actualDuration    Int? // em minutos
+routeData         String? // JSON com rota completa
+distanceTraveled  Float?
+
+// Fotos de Confirmação
+pickupPhoto       String?
+deliveryPhoto     String?
+
+// Notas
+pickupNotes       String?
+deliveryNotes     String?
+
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+
+// Relações
+trackingUpdates DeliveryTracking[]
+
+@@map(“deliveries”)
+}
+
+// ===== TRACKING EM TEMPO REAL =====
+model DeliveryTracking {
+id         String @id @default(cuid())
+deliveryId String
+delivery   Delivery @relation(fields: [deliveryId], references: [id], onDelete: Cascade)
+
+lat        Float
+lng        Float
+speed      Float?
+heading    Float?
+accuracy   Float?
+
+timestamp  DateTime @default(now())
+
+@@index([deliveryId, timestamp])
+@@map(“delivery_tracking”)
+}
+
+// ===== PONTOS DE COLETA/ENTREGA =====
+model PickupPoint {
+id          String @id @default(cuid())
+
+// Informações básicas
+name        String
+type        PickupPointType
+
+// Localização
+address     String
+lat         Float
+lng         Float
+city        String
+district    String
+
+// Contato
+contactName  String
+contactPhone String
+contactEmail String?
+
+// Operação
+openingHours String // JSON com horários
+isActive     Boolean @default(true)
+hasLocker    Boolean @default(false)
+
+// Capacidade
+maxPackages  Int     @default(50)
+currentLoad  Int     @default(0)
+
+// Parceria
+partnershipType   PartnershipType
+commissionRate    Float?
+
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+
+// Relações
+lockers       Locker[]
+pickupOrders  Order[] @relation(“PickupOrders”)
+deliveryOrders Order[] @relation(“DeliveryOrders”)
+
+@@map(“pickup_points”)
+}
+
+// ===== SMART LOCKERS =====
+model Locker {
+id            String @id @default(cuid())
+pointId       String
+point         PickupPoint @relation(fields: [pointId], references: [id], onDelete: Cascade)
+
+lockerNumber  String
+size          LockerSize
+isAvailable   Boolean @default(true)
+
+// Controle de acesso
+currentCode   String?
+codeExpiresAt DateTime?
+
+// Package info
+currentOrderId String?
+storedAt       DateTime?
+
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+
+@@unique([pointId, lockerNumber])
+@@map(“lockers”)
+}
+
+// ===== AVALIAÇÕES =====
+model Rating {
+id          String @id @default(cuid())
+
+// Quem avalia
+raterId     String
+rater       User   @relation(fields: [raterId], references: [id])
+
+// Quem é avaliado
+delivererId String?
+deliverer   DelivererProfile? @relation(“DelivererRatings”, fields: [delivererId], references: [id])
+
+// Avaliação
+rating      Float  // 1-5
+comment     String?
+
+// Categorias
+punctuality Float?
+care        Float?
+communication Float?
+
+createdAt DateTime @default(now())
+
+@@map(“ratings”)
+}
+
+// ===== PAGAMENTOS =====
+model Payment {
+id          String @id @default(cuid())
+orderId     String @unique
+order       Order  @relation(fields: [orderId], references: [id])
+
+userId      String
+user        User   @relation(fields: [userId], references: [id])
+
+amount      Float
+method      PaymentMethod
+status      PaymentStatus @default(PENDING)
+
+// IDs externos
+transactionId String?
+gatewayId     String?
+
+// Split payment
+platformAmount   Float
+delivererAmount  Float
+pointAmount      Float? // Se usar ponto de coleta
+
+paidAt      DateTime?
+
+createdAt DateTime @default(now())
+updatedAt DateTime @updatedAt
+
+@@map(“payments”)
+}
+
+// ===== NOTIFICAÇÕES =====
+model Notification {
+id      String @id @default(cuid())
+userId  String
+user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+type    NotificationType
+title   String
+message String
+data    String? // JSON com dados extras
+
+isRead  Boolean @default(false)
+readAt  DateTime?
+
+createdAt DateTime @default(now())
+
+@@index([userId, isRead])
+@@map(“notifications”)
+}
+
+// ===== ENUMS =====
+enum UserType {
+CUSTOMER
+DELIVERER
+ADMIN
+}
+
+enum VehicleType {
+MOTORCYCLE
+CAR
+TRUCK
+VAN
+BICYCLE
+}
+
+enum BackgroundCheckStatus {
+PENDING
+APPROVED
+REJECTED
+EXPIRED
+}
+
+enum PickupType {
+ADDRESS
+PICKUP_POINT
+}
+
+enum DeliveryType {
+ADDRESS
+PICKUP_POINT
+}
+
+enum PackageSize {
+SMALL    // até 2kg, cabe numa mochila
+MEDIUM   // 2-10kg, cabe no porta-malas
+LARGE    // 10-30kg, precisa banco traseiro/caminhonete
+XLARGE   // 30kg+, precisa caminhão
+}
+
+enum DeliverySpeed {
+EXPRESS   // 1-2 horas
+SAME_DAY  // até fim do dia
+STANDARD  // 24-48h
+SCHEDULED // data específica
+ECONOMIC  // quando houver entregador compatível
+}
+
+enum OrderStatus {
+PENDING           // Aguardando entregador
+ACCEPTED          // Entregador aceitou
+PICKUP_SCHEDULED  // Coleta agendada
+IN_PICKUP         // Entregador a caminho da coleta
+PICKED_UP         // Pacote coletado
+IN_TRANSIT        // A caminho do destino
+AT_DESTINATION    // Chegou no destino
+DELIVERED         // Entregue
+CANCELLED         // Cancelado
+FAILED            // Falhou
+}
+
+enum PickupPointType {
+GAS_STATION
+SUPERMARKET
+CONVENIENCE_STORE
+PHARMACY
+PARTNER_STORE
+DEDICATED_HUB
+}
+
+enum PartnershipType {
+COMMISSION    // Parceiro recebe comissão
+FREE          // Parceiro oferece gratuitamente
+MONTHLY_FEE   // Etchi paga mensalidade
+}
+
+enum LockerSize {
+SMALL
+MEDIUM
+LARGE
+}
+
+enum PaymentMethod {
+CREDIT_CARD
+DEBIT_CARD
+BANK_TRANSFER
+MOBILE_MONEY
+MULTICAIXA
+CASH
+}
+
+enum PaymentStatus {
+PENDING
+PROCESSING
+COMPLETED
+FAILED
+REFUNDED
+}
+
+enum NotificationType {
+ORDER_CREATED
+ORDER_ACCEPTED
+DELIVERER_NEARBY
+PICKED_UP
+IN_TRANSIT
+DELIVERED
+RATING_RECEIVED
+PAYMENT_RECEIVED
+SYSTEM_ALERT
+}
+*/
+
+// ============================================
+// 2. SERVIÇOS PRINCIPAIS
+// ============================================
+
+// src/services/MatchingService.ts
+interface MatchingCriteria {
+orderId: string;
+pickupLat: number;
+pickupLng: number;
+deliveryLat: number;
+deliveryLng: number;
+packageSize: string;
+weight: number;
+deliverySpeed: string;
+}
+
+interface DelivererScore {
+delivererId: string;
+score: number;
+reasons: string[];
+estimatedPickupTime: number;
+}
+
+export class MatchingService {
+// Algoritmo de matching inteligente
+async findBestDeliverers(criteria: MatchingCriteria): Promise<DelivererScore[]> {
+const { pickupLat, pickupLng, packageSize, weight, deliverySpeed } = criteria;
+
+```
+// 1. Buscar entregadores disponíveis próximos
+const availableDeliverers = await this.getAvailableDeliverersNearby(
+  pickupLat,
+  pickupLng,
+  10 // raio em km
+);
+
+// 2. Calcular score para cada entregador
+const scoredDeliverers = await Promise.all(
+  availableDeliverers.map(async (deliverer) => {
+    let score = 100;
+    const reasons: string[] = [];
+    
+    // Distância (40 pontos)
+    const distance = this.calculateDistance(
+      pickupLat,
+      pickupLng,
+      deliverer.currentLat!,
+      deliverer.currentLng!
+    );
+    const distanceScore = Math.max(0, 40 - distance * 4);
+    score += distanceScore;
+    reasons.push(`${distance.toFixed(1)}km de distância`);
+    
+    // Rating (30 pontos)
+    const ratingScore = (deliverer.rating / 5) * 30;
+    score += ratingScore;
+    reasons.push(`Rating ${deliverer.rating}/5.0`);
+    
+    // Taxa de conclusão (20 pontos)
+    const completionRate = deliverer.completedDeliveries / 
+      (deliverer.totalDeliveries || 1);
+    score += completionRate * 20;
+    
+    // Capacidade do veículo (10 pontos)
+    const capacityMatch = this.checkCapacity(deliverer, weight, packageSize);
+    if (capacityMatch) {
+      score += 10;
+      reasons.push('Veículo compatível');
+    }
+    
+    return {
+      delivererId: deliverer.id,
+      score,
+      reasons,
+      estimatedPickupTime: Math.ceil(distance / 30 * 60) // assumindo 30km/h média
+    };
+  })
+);
+
+// 3. Ordenar por score
+return scoredDeliverers
+  .filter(d => d.score >= 50) // mínimo de 50 pontos
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 10); // top 10
+```
+
+}
+
+// Cálculo de distância Haversine
+private calculateDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+const R = 6371; // Raio da Terra em km
+const dLat = this.toRad(lat2 - lat1);
+const dLng = this.toRad(lng2 - lng1);
+
+```
+const a = 
+  Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+  Math.cos(this.toRad(lat1)) * Math.cos(this.toRad(lat2)) *
+  Math.sin(dLng / 2) * Math.sin(dLng / 2);
+
+const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+return R * c;
+```
+
+}
+
+private toRad(deg: number): number {
+return deg * (Math.PI / 180);
+}
+
+private async getAvailableDeliverersNearby(lat: number, lng: number, radiusKm: number) {
+// Implementação com Prisma
+return [];
+}
+
+private checkCapacity(deliverer: any, weight: number, packageSize: string): boolean {
+return deliverer.maxWeight >= weight;
+}
+}
+
+// ============================================
+// 3. PRICING SERVICE
+// ============================================
+
+// src/services/PricingService.ts
+export class PricingService {
+private readonly BASE_RATE = 200; // Kwanzas por km
+private readonly MIN_PRICE = 500; // Mínimo
+
+calculatePrice(params: {
+distanceKm: number;
+weight: number;
+packageSize: string;
+deliverySpeed: string;
+isDeclaredValue: boolean;
+declaredValue?: number;
+}): {
+basePrice: number;
+urgencyFee: number;
+insuranceFee: number;
+platformFee: number;
+finalPrice: number;
+delivererEarnings: number;
+} {
+const { distanceKm, weight, deliverySpeed, isDeclaredValue, declaredValue } = params;
+
+```
+// 1. Preço base (distância + peso)
+let basePrice = distanceKm * this.BASE_RATE;
+basePrice += weight * 50; // 50 Kz por kg
+
+// 2. Taxa de urgência
+let urgencyFee = 0;
+switch (deliverySpeed) {
+  case 'EXPRESS':
+    urgencyFee = basePrice * 1.5; // 150% a mais
+    break;
+  case 'SAME_DAY':
+    urgencyFee = basePrice * 0.5; // 50% a mais
+    break;
+  case 'ECONOMIC':
+    urgencyFee = -basePrice * 0.3; // 30% desconto
+    break;
+}
+
+// 3. Seguro (se tiver valor declarado)
+let insuranceFee = 0;
+if (isDeclaredValue && declaredValue) {
+  insuranceFee = declaredValue * 0.02; // 2% do valor
+}
+
+// 4. Taxa da plataforma (20%)
+const subtotal = Math.max(this.MIN_PRICE, basePrice + urgencyFee + insuranceFee);
+const platformFee = subtotal * 0.20;
+
+// 5. Preço final
+const finalPrice = subtotal + platformFee;
+
+// 6. Ganhos do entregador (80% do subtotal)
+const delivererEarnings = subtotal * 0.80;
+
+return {
+  basePrice,
+  urgencyFee,
+  insuranceFee,
+  platformFee,
+  finalPrice: Math.round(finalPrice),
+  delivererEarnings: Math.round(delivererEarnings)
+};
+```
+
+}
+
+// Pricing dinâmico baseado em demanda
+applyDynamicPricing(basePrice: number, demandFactor: number): number {
+// demandFactor: 0.5 (baixa demanda) a 2.0 (alta demanda)
+return basePrice * demandFactor;
+}
+}
+
+// ============================================
+// 4. ROUTE OPTIMIZATION SERVICE
+// ============================================
+
+// src/services/RouteService.ts
+export class RouteService {
+async getOptimizedRoute(params: {
+originLat: number;
+originLng: number;
+destLat: number;
+destLng: number;
+vehicleType: string;
+}) {
+// Integração com Google Maps Directions API
+const { originLat, originLng, destLat, destLng } = params;
+
+```
+// Aqui você faria a chamada real para Google Maps API
+return {
+  distance: 0,
+  duration: 0,
+  polyline: '',
+  steps: []
+};
+```
+
+}
+
+async getMultipleDeliveriesRoute(deliveries: Array<{
+pickupLat: number;
+pickupLng: number;
+deliveryLat: number;
+deliveryLng: number;
+}>) {
+// Algoritmo para otimizar múltiplas entregas em uma rota
+// TSP (Traveling Salesman Problem) simplificado
+return {
+optimizedOrder: [],
+totalDistance: 0,
+totalDuration: 0
+};
+}
+}
+
+// ============================================
+// 5. NOTIFICATION SERVICE
+// ============================================
+
+// src/services/NotificationService.ts
+export class NotificationService {
+async sendPushNotification(userId: string, notification: {
+title: string;
+body: string;
+data?: any;
+}) {
+// Firebase Cloud Messaging
+console.log(`Sending push to ${userId}:`, notification);
+}
+
+async sendSMS(phone: string, message: string) {
+// Integração com Twilio ou similar
+console.log(`Sending SMS to ${phone}: ${message}`);
+}
+
+async sendEmail(email: string, subject: string, body: string) {
+// Integração com SendGrid
+console.log(`Sending email to ${email}`);
+}
+
+async notifyOrderCreated(orderId: string, userId: string) {
+await this.sendPushNotification(userId, {
+title: ‘Pedido criado!’,
+body: ‘Estamos procurando um entregador para você.’,
+data: { orderId, type: ‘ORDER_CREATED’ }
+});
+}
+
+async notifyDelivererFound(orderId: string, userId: string, delivererName: string) {
+await this.sendPushNotification(userId, {
+title: ‘Entregador encontrado!’,
+body: `${delivererName} aceitou sua entrega.`,
+data: { orderId, type: ‘ORDER_ACCEPTED’ }
+});
+}
+}
+
+// ============================================
+// 6. TRACKING SERVICE
+// ============================================
+
+// src/services/TrackingService.ts
+export class TrackingService {
+async updateDelivererLocation(deliveryId: string, location: {
+lat: number;
+lng: number;
+speed?: number;
+heading?: number;
+}) {
+// Salvar no banco + broadcast via Socket.io
+console.log(`Updating location for delivery ${deliveryId}`, location);
+}
+
+async getDeliveryTracking(deliveryId: string) {
+// Retornar histórico de localizações
+return [];
+}
+
+async estimateArrival(deliveryId: string) {
+// Calcular ETA baseado na localização atual e rota
+return {
+estimatedMinutes: 0,
+estimatedArrival: new Date()
+};
+}
+}
+
+console.log(‘Etchi Backend Structure - Ready for implementation’);
