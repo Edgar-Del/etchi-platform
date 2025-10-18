@@ -59,13 +59,20 @@ export class SmartPointsService {
       const code = await this.generateUniqueCode();
 
       const smartPointData: Partial<ISmartPoint> = {
-        ...createSmartPointDto,
-        code,
+        name: createSmartPointDto.name,
+        location: createSmartPointDto.location,
+        managerId: managerId as any,
+        contactPhone: createSmartPointDto.contactPhone,
+        email: createSmartPointDto.email,
         capacity: {
           total: capacity,
           available: capacity,
           reserved: 0,
         },
+        services: createSmartPointDto.services || [],
+        facilities: createSmartPointDto.facilities || {},
+        operatingHours: createSmartPointDto.operatingHours || {},
+        code,
         status: SmartPointStatus.ACTIVE,
       };
 
@@ -390,7 +397,7 @@ export class SmartPointsService {
    * Gera código único para ponto
    */
   private async generateUniqueCode(): Promise<string> {
-    let code: string;
+    let code: string = '';
     let isUnique = false;
     let attempts = 0;
 

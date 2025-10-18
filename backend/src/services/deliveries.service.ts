@@ -6,13 +6,42 @@ import { UsersService } from './users.service';
 import { NotificationsService } from './notifications.service';
 import { AnalyticsService } from './analytics.service';
 
+export interface DeliveryAddress {
+  fullAddress: string;
+  latitude?: number;
+  longitude?: number;
+  [key: string]: any;
+}
+
+export interface PackageDetails {
+  description: string;
+  weight: number;
+  size: string;
+  dimensions?: {
+    length: number;
+    width: number;
+    height: number;
+  };
+  declaredValue: number;
+  images: string[];
+  category: string;
+}
+
+export interface DeliveryRequirements {
+  signatureRequired?: boolean;
+  idVerification?: boolean;
+  fragile?: boolean;
+  perishable?: boolean;
+  [key: string]: any;
+}
+
 export interface CreateDeliveryDto {
   customerId: string;
-  pickupAddress: any;
-  deliveryAddress: any;
-  package: any;
+  pickupAddress: DeliveryAddress;
+  deliveryAddress: DeliveryAddress;
+  package: PackageDetails;
   deliveryType: DeliveryType;
-  requirements?: any;
+  requirements?: DeliveryRequirements;
   urgency?: string;
 }
 
@@ -76,13 +105,7 @@ export class DeliveriesService {
       // Gerar código de rastreamento
       const trackingCode = this.generateTrackingCode();
 
-    // Define o tipo correto para os dados da entrega
-    interface IDeliveryAddress {
-      fullAddress: string;
-      latitude: number;
-      longitude: number;
-      [key: string]: any;
-    }
+    // Use the exported interface
 
     const deliveryData = {
       trackingCode,
@@ -91,12 +114,12 @@ export class DeliveriesService {
         ...pickupAddress,
         latitude: pickupCoords.lat,
         longitude: pickupCoords.lng,
-      } as IDeliveryAddress,
+      } as DeliveryAddress,
       deliveryAddress: {
         ...deliveryAddress,
         latitude: deliveryCoords.lat,
         longitude: deliveryCoords.lng,
-      } as IDeliveryAddress,
+      } as DeliveryAddress,
       package: packageDetails,
       deliveryType: createDeliveryDto.deliveryType,
       status: DeliveryStatus.PENDING,
@@ -114,7 +137,7 @@ export class DeliveriesService {
         fragile: false,
         perishable: false,
       },
-    } as Partial<IDeliveryRequest> & { deliveryAddress?: IDeliveryAddress };
+    } as Partial<IDeliveryRequest>;
 
       const delivery = await DeliveryRequest.create(deliveryData);
 

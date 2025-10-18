@@ -1,11 +1,41 @@
 // src/services/geocoding.service.ts
 import axios from 'axios';
 
+// Interfaces for Google Maps API responses
+interface GoogleGeocodingResponse {
+  results: Array<{
+    geometry: {
+      location: {
+        lat: number;
+        lng: number;
+      };
+    };
+  }>;
+  status: string;
+}
+
+interface GoogleDistanceMatrixResponse {
+  rows: Array<{
+    elements: Array<{
+      status: string;
+      distance?: {
+        value: number;
+        text: string;
+      };
+      duration?: {
+        value: number;
+        text: string;
+      };
+    }>;
+  }>;
+  status: string;
+}
+
 export class GeocodingService {
   async geocodeAddress(address: string): Promise<{ lat: number; lng: number } | null> {
     try {
       // Usar Google Maps Geocoding API
-      const response = await axios.get(
+      const response = await axios.get<GoogleGeocodingResponse>(
         'https://maps.googleapis.com/maps/api/geocode/json',
         {
           params: {
@@ -33,7 +63,7 @@ export class GeocodingService {
   async calculateDistance(origin: { lat: number; lng: number }, destination: { lat: number; lng: number }): Promise<{ distance: number; duration: number }> {
     try {
       // Usar Google Distance Matrix API
-      const response = await axios.get(
+      const response = await axios.get<GoogleDistanceMatrixResponse>(
         'https://maps.googleapis.com/maps/api/distancematrix/json',
         {
           params: {
@@ -47,8 +77,8 @@ export class GeocodingService {
       if (response.data.rows[0].elements[0].status === 'OK') {
         const element = response.data.rows[0].elements[0];
         return {
-          distance: element.distance.value / 1000,
-          duration: element.duration.value / 60,
+          distance: (element.distance?.value || 0) / 1000,
+          duration: (element.duration?.value || 0) / 60,
         };
       }
 

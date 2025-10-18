@@ -277,8 +277,8 @@ export class NotificationsService {
         },
         data: {
           notificationId: notification._id.toString(),
-          type: notification.type,
-          relatedEntityId: notification.relatedEntityId?.toString(),
+          type: notification.type.toString(),
+          relatedEntityId: notification.relatedEntityId?.toString() || '',
           click_action: 'FLUTTER_NOTIFICATION_CLICK',
         },
         tokens: fcmTokens,

@@ -1,5 +1,7 @@
 // src/services/support.service.ts
 import { SupportTicket, ISupportTicket, SupportCategory, TicketPriority, TicketStatus } from '../models/SupportTicket.model';
+import { UserType } from '../models/User.model';
+import { NotificationType } from '../models/Notification.model';
 import { UsersService } from './users.service';
 import { NotificationsService } from './notifications.service';
 
@@ -420,7 +422,7 @@ export class SupportService {
       const userResult = await this.usersService.findById(userId);
       const user = userResult.data;
       // Implementar lógica para verificar se é suporte/admin
-      return user.userType === 'admin' || user.userType === 'support_agent';
+      return user.userType === UserType.ADMIN;
     } catch {
       return false;
     }
@@ -498,8 +500,8 @@ export class SupportService {
       'Nova Resposta no Ticket',
       `Seu ticket ${ticket.ticketNumber} recebeu uma nova resposta`,
       {
-        type: 'support_response',
-        relatedEntityId: ticket._id.toString(),
+        type: NotificationType.SUPPORT_RESPONSE,
+        relatedEntityId: (ticket._id as any).toString(),
         relatedEntityType: 'SupportTicket',
       }
     );
@@ -521,8 +523,8 @@ export class SupportService {
         'Status do Ticket Atualizado',
         `Seu ticket ${ticket.ticketNumber} ${statusMessages[ticket.status]}`,
         {
-          type: 'support_response',
-          relatedEntityId: ticket._id.toString(),
+          type: NotificationType.SUPPORT_RESPONSE,
+          relatedEntityId: (ticket._id as any).toString(),
           relatedEntityType: 'SupportTicket',
         }
       );

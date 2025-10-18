@@ -1,5 +1,6 @@
 // src/services/reviews.service.ts
 import { Review, IReview, ReviewType } from '../models/Review.model';
+import { User } from '../models/User.model';
 import { UsersService } from './users.service';
 import { DeliveriesService } from './deliveries.service';
 import { NotificationsService } from './notifications.service';
@@ -327,7 +328,7 @@ export class ReviewsService {
       });
 
       // Atualizar review original com referência à resposta
-      review.responseId = responseReview._id;
+      review.responseId = responseReview._id as any;
       review.respondedAt = new Date();
       review.responseComment = comment;
 
@@ -434,9 +435,8 @@ export class ReviewsService {
         const averageRating = await this.getAverageRating(userId);
         
         // Atualizar rating no perfil do entregador
-        await this.usersService.updateProfile(userId, {
-          rating: averageRating,
-        });
+        // Note: rating field needs to be added to UpdateUserDto or use direct update
+        await User.findByIdAndUpdate(userId, { rating: averageRating });
       }
     } catch (error: any) {
       console.error(`Erro ao atualizar rating do usuário ${userId}: ${error.message}`);
@@ -548,8 +548,8 @@ export class ReviewsService {
       'Nova Avaliação Recebida',
       message,
       {
-        type: 'rating_reminder',
-        relatedEntityId: review._id.toString(),
+        type: NotificationType.RATING_REMINDER,
+        relatedEntityId: (review._id as any).toString(),
         relatedEntityType: 'Review',
       }
     );
@@ -569,7 +569,7 @@ export class ReviewsService {
       'Sua avaliação recebeu uma resposta',
       {
         type: NotificationType.SUPPORT_RESPONSE,
-        relatedEntityId: originalReview._id.toString(),
+        relatedEntityId: (originalReview._id as any).toString(),
         relatedEntityType: 'Review',
       }
     );

@@ -1,6 +1,37 @@
 // src/services/transactions.service.ts
 import axios from 'axios';
-import { Transaction, ITransaction, TransactionType, TransactionStatus, PaymentMethod } from '../models/Transaction.model';
+import { Transaction, ITransaction, TransactionType, TransactionStatus } from '../models/Transaction.model';
+import { PaymentMethod } from '../models/DeliveryRequest.model';
+
+// Interfaces for external API responses
+interface MulticaixaPaymentResponse {
+  status: 'success' | 'failed';
+  transactionId?: string;
+  authCode?: string;
+  message?: string;
+}
+
+interface MulticaixaStatusResponse {
+  status: 'completed' | 'failed' | 'pending';
+}
+
+interface PayPalPaymentResponse {
+  id: string;
+  state: string;
+  links: Array<{
+    rel: string;
+    href: string;
+  }>;
+}
+
+interface PayPalStatusResponse {
+  state: 'approved' | 'pending' | 'failed';
+}
+
+interface MulticaixaPayoutResponse {
+  status: 'success' | 'failed';
+  message?: string;
+}
 import { UsersService } from './users.service';
 import { DeliveriesService } from './deliveries.service';
 import { AnalyticsService } from './analytics.service';
@@ -309,7 +340,7 @@ export class TransactionsService {
         // await user.save({ session });
       } else {
         transaction[0].status = TransactionStatus.FAILED;
-        transaction[0].paymentDetails.failureReason = payoutResult.message;
+        transaction[0].failureReason = payoutResult.message;
       }
 
       await transaction[0].save({ session });
@@ -386,7 +417,7 @@ export class TransactionsService {
         description: `Pagamento Etchi - Entrega ${transaction.deliveryRequestId}`,
       };
 
-      const response = await axios.post(
+      const response = await axios.post<MulticaixaPaymentResponse>(
         process.env.MULTICAIXA_API_URL + '/payments',
         payload,
         {
@@ -448,7 +479,7 @@ export class TransactionsService {
         },
       };
 
-      const response = await axios.post(
+      const response = await axios.post<PayPalPaymentResponse>(
         process.env.PAYPAL_API_URL + '/v1/payments/payment',
         payload,
         {
@@ -463,7 +494,7 @@ export class TransactionsService {
         status: TransactionStatus.PENDING,
         details: {
           transactionId: response.data.id,
-          approvalUrl: response.data.links.find((link: any) => link.rel === 'approval_url').href,
+          approvalUrl: response.data.links.find((link) => link.rel === 'approval_url')?.href || '',
         },
       };
     } catch (error: any) {
@@ -540,7 +571,7 @@ export class TransactionsService {
         recipientName: user.name,
       };
 
-      const response = await axios.post(
+      const response = await axios.post<MulticaixaPayoutResponse>(
         process.env.MULTICAIXA_API_URL + '/payouts',
         payload,
         {
@@ -568,7 +599,7 @@ export class TransactionsService {
    */
   private async verifyMulticaixaStatus(transaction: ITransaction): Promise<TransactionStatus> {
     try {
-      const response = await axios.get(
+      const response = await axios.get<MulticaixaStatusResponse>(
         `${process.env.MULTICAIXA_API_URL}/payments/${transaction.paymentDetails.transactionId}`,
         {
           headers: {
@@ -577,7 +608,7 @@ export class TransactionsService {
         }
       );
 
-      const statusMap: any = {
+      const statusMap: Record<string, TransactionStatus> = {
         'completed': TransactionStatus.COMPLETED,
         'failed': TransactionStatus.FAILED,
         'pending': TransactionStatus.PENDING,
@@ -595,7 +626,7 @@ export class TransactionsService {
    */
   private async verifyPaypalStatus(transaction: ITransaction): Promise<TransactionStatus> {
     try {
-      const response = await axios.get(
+      const response = await axios.get<PayPalStatusResponse>(
         `${process.env.PAYPAL_API_URL}/v1/payments/payment/${transaction.paymentDetails.transactionId}`,
         {
           headers: {
