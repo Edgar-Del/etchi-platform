@@ -74,6 +74,8 @@ export interface DeliveryTimeline {
  * @property {Date} updatedAt - Data de atualização
  */
 export interface IDeliveryRequest extends Document {
+  pickupAddress: any;
+  pickupAddress: any;
   trackingCode: string;
   customerId: mongoose.Types.ObjectId;
   deliveryPartnerId?: mongoose.Types.ObjectId;
@@ -112,7 +114,8 @@ export enum DeliveryStatus {
   DELIVERY_ARRIVED = 'delivery_arrived', // Entregador chegou para entrega
   DELIVERED = 'delivered',       // Entregue com sucesso
   CANCELLED = 'cancelled',       // Cancelado
-  FAILED = 'failed'              // Falhou
+  FAILED = 'failed',              // Falhou
+  ASSIGNED = "ASSIGNED"
 }
 
 /**

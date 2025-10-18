@@ -61,6 +61,7 @@ export interface UserPreferences {
  * @property {Date} updatedAt - Data de atualização
  */
 export interface IUser extends Document {
+  travelerProfile: any;
   name: string;
   email: string;
   phone: string;
