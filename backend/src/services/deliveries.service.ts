@@ -5,6 +5,8 @@ import { PricingService } from './pricing.service';
 import { UsersService } from './users.service';
 import { NotificationsService } from './notifications.service';
 import { AnalyticsService } from './analytics.service';
+import { AddressesService } from './addresses.service';
+import { Address } from '../models/Address.model';
 
 export interface DeliveryAddress {
   fullAddress: string;
@@ -57,6 +59,7 @@ export class DeliveriesService {
   private usersService: UsersService;
   private notificationsService: NotificationsService;
   private analyticsService: AnalyticsService;
+  private addressesService: AddressesService;
 
   constructor() {
     this.geocodingService = new GeocodingService();
@@ -64,6 +67,7 @@ export class DeliveriesService {
     this.usersService = new UsersService();
     this.notificationsService = new NotificationsService();
     this.analyticsService = new AnalyticsService();
+    this.addressesService = new AddressesService();
   }
 
   /**
@@ -107,25 +111,44 @@ export class DeliveriesService {
 
     // Use the exported interface
 
+    // Criar endereços primeiro
+    const originAddressResult = await this.addressesService.create({
+      userId: customerId,
+      label: 'Endereço de Origem',
+      contactName: 'Cliente',
+      contactPhone: '000000000',
+      addressType: 'PICKUP' as any,
+      street: pickupAddress.fullAddress,
+      neighborhood: 'Centro',
+      municipality: 'Luanda',
+      province: 'Luanda',
+    });
+    
+    const destinationAddressResult = await this.addressesService.create({
+      userId: customerId,
+      label: 'Endereço de Destino',
+      contactName: 'Destinatário',
+      contactPhone: '000000000',
+      addressType: 'DELIVERY' as any,
+      street: deliveryAddress.fullAddress,
+      neighborhood: 'Centro',
+      municipality: 'Luanda',
+      province: 'Luanda',
+    });
+
     const deliveryData = {
       trackingCode,
       customerId: customerId as any,
-      pickupAddress: {
-        ...pickupAddress,
-        latitude: pickupCoords.lat,
-        longitude: pickupCoords.lng,
-      } as DeliveryAddress,
-      deliveryAddress: {
-        ...deliveryAddress,
-        latitude: deliveryCoords.lat,
-        longitude: deliveryCoords.lng,
-      } as DeliveryAddress,
+      originAddressId: originAddressResult.data._id,
+      destinationAddressId: destinationAddressResult.data._id,
       package: packageDetails,
       deliveryType: createDeliveryDto.deliveryType,
       status: DeliveryStatus.PENDING,
       estimatedDistance: distanceResult.distance,
       estimatedDuration: distanceResult.duration,
       pricing,
+      pickupDeadline: new Date(Date.now() + 2 * 60 * 60 * 1000), // 2 horas
+      deliveryDeadline: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 horas
       timeline: [{
         status: DeliveryStatus.PENDING,
         description: 'Pedido criado e aguardando atribuição',
@@ -178,10 +201,16 @@ export class DeliveriesService {
         throw new Error('Entrega já foi atribuída ou está em andamento');
       }
 
+      // Buscar endereço de origem para obter coordenadas
+      const originAddress = await Address.findById(delivery.originAddressId);
+      if (!originAddress) {
+        throw new Error('Endereço de origem não encontrado');
+      }
+      
       // Encontrar entregadores próximos
       const nearbyCouriers = await this.usersService.findNearbyCouriers({
-        lat: delivery.pickupAddress.latitude,
-        lng: delivery.pickupAddress.longitude,
+        lat: originAddress.location.coordinates[1],
+        lng: originAddress.location.coordinates[0],
       }, 5000); // 5km radius
 
       if (nearbyCouriers.data.length === 0) {
@@ -465,9 +494,16 @@ export class DeliveriesService {
         _id: string;
       }
       
+      // Buscar endereço de origem para obter coordenadas
+      const originAddress = await Address.findById(delivery.originAddressId);
+      if (!originAddress) {
+        console.error('Endereço de origem não encontrado para notificação');
+        return;
+      }
+      
       const nearbyCouriers = await this.usersService.findNearbyCouriers({
-        lat: delivery.pickupAddress.latitude,
-        lng: delivery.pickupAddress.longitude,
+        lat: originAddress.location.coordinates[1],
+        lng: originAddress.location.coordinates[0],
       }, 3000); // 3km radius
 
       for (const courier of nearbyCouriers.data as Courier[]) {
