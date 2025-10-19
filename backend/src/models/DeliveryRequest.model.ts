@@ -74,8 +74,6 @@ export interface DeliveryTimeline {
  * @property {Date} updatedAt - Data de atualização
  */
 export interface IDeliveryRequest extends Document {
-  pickupAddress: any;
-  pickupAddress: any;
   trackingCode: string;
   customerId: mongoose.Types.ObjectId;
   deliveryPartnerId?: mongoose.Types.ObjectId;
