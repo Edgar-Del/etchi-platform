@@ -680,4 +680,118 @@ export class TransactionsService {
     };
     return gateways[paymentMethod];
   }
+
+  /**
+   * Processa callback de pagamento
+   */
+  async handlePaymentCallback(callbackData: any): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: any 
+  }> {
+    try {
+      const { transactionId, status, authCode } = callbackData;
+
+      const transaction = await Transaction.findById(transactionId);
+      if (!transaction) {
+        throw new Error('Transação não encontrada');
+      }
+
+      // Atualizar status baseado no callback
+      if (status === 'success' || status === 'completed') {
+        transaction.status = TransactionStatus.COMPLETED;
+        if (authCode) {
+          transaction.paymentDetails.authCode = authCode;
+        }
+      } else {
+        transaction.status = TransactionStatus.FAILED;
+      }
+
+      await transaction.save();
+
+      return {
+        success: true,
+        message: 'Callback processado com sucesso',
+        data: transaction
+      };
+    } catch (error: any) {
+      console.error(`Erro ao processar callback: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Encontra transação por ID
+   */
+  async findById(id: string): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: ITransaction 
+  }> {
+    try {
+      const transaction = await Transaction.findById(id);
+      if (!transaction) {
+        throw new Error('Transação não encontrada');
+      }
+
+      return {
+        success: true,
+        message: 'Transação encontrada com sucesso',
+        data: transaction
+      };
+    } catch (error: any) {
+      console.error(`Erro ao buscar transação ${id}: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Lista todas as transações
+   */
+  async findAll(): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: ITransaction[] 
+  }> {
+    try {
+      const transactions = await Transaction.find()
+        .populate('customerId', 'name email')
+        .sort({ createdAt: -1 })
+        .exec();
+
+      return {
+        success: true,
+        message: 'Transações listadas com sucesso',
+        data: transactions
+      };
+    } catch (error: any) {
+      console.error(`Erro ao listar transações: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Encontra transações por usuário
+   */
+  async findByUser(userId: string): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: ITransaction[] 
+  }> {
+    try {
+      const transactions = await Transaction.find({ customerId: userId })
+        .populate('customerId', 'name email')
+        .sort({ createdAt: -1 })
+        .exec();
+
+      return {
+        success: true,
+        message: 'Transações do usuário listadas com sucesso',
+        data: transactions
+      };
+    } catch (error: any) {
+      console.error(`Erro ao buscar transações do usuário ${userId}: ${error.message}`);
+      throw error;
+    }
+  }
 }

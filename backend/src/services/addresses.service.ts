@@ -118,6 +118,31 @@ export class AddressesService {
   }
 
   /**
+   * Encontra um endereço por ID
+   */
+  async findById(id: string): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: IAddress 
+  }> {
+    try {
+      const address = await Address.findById(id);
+      if (!address) {
+        throw new Error('Endereço não encontrado');
+      }
+
+      return {
+        success: true,
+        message: 'Endereço encontrado com sucesso',
+        data: address
+      };
+    } catch (error: any) {
+      console.error(`Erro ao buscar endereço ${id}: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
    * Atualiza um endereço
    */
   async update(id: string, updateAddressDto: UpdateAddressDto): Promise<{ 

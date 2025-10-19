@@ -486,6 +486,176 @@ export class DeliveriesService {
   }
 
   /**
+   * Cria uma nova entrega (alias para createDelivery)
+   */
+  async create(createDeliveryDto: CreateDeliveryDto): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: IDeliveryRequest 
+  }> {
+    return this.createDelivery(createDeliveryDto);
+  }
+
+  /**
+   * Lista todas as entregas com filtros
+   */
+  async findAll(filters: any = {}): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: IDeliveryRequest[] 
+  }> {
+    try {
+      const query: any = {};
+      
+      if (filters.clientId) query.customerId = filters.clientId;
+      if (filters.courierId) query.deliveryPartnerId = filters.courierId;
+      if (filters.status) query.status = filters.status;
+      if (filters.deliveryType) query.deliveryType = filters.deliveryType;
+
+      const deliveries = await DeliveryRequest.find(query)
+        .populate('customerId', 'name email phone')
+        .populate('deliveryPartnerId', 'name email phone')
+        .populate('originAddressId')
+        .populate('destinationAddressId')
+        .sort({ createdAt: -1 })
+        .exec();
+
+      return {
+        success: true,
+        message: 'Entregas listadas com sucesso',
+        data: deliveries
+      };
+    } catch (error: any) {
+      console.error(`Erro ao listar entregas: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Encontra entregas por usuário
+   */
+  async findByUser(userId: string, userRole: string): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: IDeliveryRequest[] 
+  }> {
+    try {
+      const query: any = {};
+      
+      if (userRole === 'CLIENT') {
+        query.customerId = userId;
+      } else if (userRole === 'COURIER') {
+        query.deliveryPartnerId = userId;
+      }
+
+      const deliveries = await DeliveryRequest.find(query)
+        .populate('customerId', 'name email phone')
+        .populate('deliveryPartnerId', 'name email phone')
+        .populate('originAddressId')
+        .populate('destinationAddressId')
+        .sort({ createdAt: -1 })
+        .exec();
+
+      return {
+        success: true,
+        message: 'Entregas do usuário listadas com sucesso',
+        data: deliveries
+      };
+    } catch (error: any) {
+      console.error(`Erro ao buscar entregas do usuário ${userId}: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Encontra entrega por ID
+   */
+  async findById(id: string): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: IDeliveryRequest 
+  }> {
+    try {
+      const delivery = await DeliveryRequest.findById(id)
+        .populate('customerId', 'name email phone')
+        .populate('deliveryPartnerId', 'name email phone')
+        .populate('originAddressId')
+        .populate('destinationAddressId')
+        .exec();
+
+      if (!delivery) {
+        throw new Error('Entrega não encontrada');
+      }
+
+      return {
+        success: true,
+        message: 'Entrega encontrada com sucesso',
+        data: delivery
+      };
+    } catch (error: any) {
+      console.error(`Erro ao buscar entrega ${id}: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Cancela uma entrega
+   */
+  async cancel(id: string, userId: string): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: IDeliveryRequest 
+  }> {
+    try {
+      const delivery = await DeliveryRequest.findById(id);
+      if (!delivery) {
+        throw new Error('Entrega não encontrada');
+      }
+
+      // Verificar se o usuário pode cancelar
+      if (delivery.customerId.toString() !== userId) {
+        throw new Error('Apenas o cliente pode cancelar a entrega');
+      }
+
+      // Verificar se pode ser cancelada
+      if ([DeliveryStatus.DELIVERED, DeliveryStatus.CANCELLED, DeliveryStatus.FAILED].includes(delivery.status)) {
+        throw new Error('Entrega não pode ser cancelada');
+      }
+
+      delivery.status = DeliveryStatus.CANCELLED;
+      delivery.cancellationReason = 'Cancelado pelo cliente';
+
+      delivery.timeline.push({
+        status: DeliveryStatus.CANCELLED,
+        description: 'Entrega cancelada pelo cliente',
+        timestamp: new Date(),
+      });
+
+      const updatedDelivery = await delivery.save();
+
+      return {
+        success: true,
+        message: 'Entrega cancelada com sucesso',
+        data: updatedDelivery
+      };
+    } catch (error: any) {
+      console.error(`Erro ao cancelar entrega ${id}: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Rastreia uma entrega (alias para trackDelivery)
+   */
+  async track(id: string): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: any 
+  }> {
+    return this.trackDelivery(id);
+  }
+
+  /**
    * Notifica entregadores próximos sobre nova entrega
    */
   private async notifyNearbyCouriers(delivery: IDeliveryRequest): Promise<void> {

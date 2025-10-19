@@ -1,4 +1,5 @@
 // src/services/assignments.service.ts
+import mongoose from 'mongoose';
 import { DeliveryAssignment, IDeliveryAssignment, AssignmentStatus } from '../models/DeliveryAssignment.model';
 import { DeliveriesService } from './deliveries.service';
 import { UsersService } from './users.service';
@@ -130,6 +131,84 @@ export class AssignmentsService {
       };
     } catch (error: any) {
       console.error(`Erro ao criar atribuição: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Atribui uma entrega ao entregador mais próximo
+   */
+  async assignToNearestCourier(deliveryId: string): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: IDeliveryAssignment 
+  }> {
+    try {
+      // Usar o método assignCourier do DeliveriesService
+      const deliveryResult = await this.deliveriesService.assignCourier(deliveryId);
+      const delivery = deliveryResult.data;
+
+      // Criar atribuição
+      const assignmentData = {
+        deliveryRequestId: deliveryId,
+        deliveryPartnerId: delivery.deliveryPartnerId?.toString() || '',
+      };
+
+      const assignmentResult = await this.createAssignment(assignmentData);
+      
+      return {
+        success: true,
+        message: 'Entrega atribuída ao entregador mais próximo',
+        data: assignmentResult.data
+      };
+    } catch (error: any) {
+      console.error(`Erro ao atribuir entrega ${deliveryId}: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Atualiza o status de uma atribuição
+   */
+  async updateStatus(id: string, updateStatusDto: UpdateAssignmentStatusDto): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: IDeliveryAssignment 
+  }> {
+    return this.updateAssignmentStatus(id, updateStatusDto);
+  }
+
+  /**
+   * Encontra atribuições por entregador
+   */
+  async findByCourier(courierId: string): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: IDeliveryAssignment[] 
+  }> {
+    return this.getAssignmentsByCourier(courierId);
+  }
+
+  /**
+   * Encontra atribuição por entrega
+   */
+  async findByDelivery(deliveryId: string): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: IDeliveryAssignment | null 
+  }> {
+    try {
+      const assignment = await DeliveryAssignment.findOne({ deliveryRequestId: deliveryId })
+        .populate('deliveryRequestId')
+        .populate('deliveryPartnerId');
+
+      return {
+        success: true,
+        message: assignment ? 'Atribuição encontrada' : 'Nenhuma atribuição encontrada',
+        data: assignment
+      };
+    } catch (error: any) {
+      console.error(`Erro ao buscar atribuição da entrega ${deliveryId}: ${error.message}`);
       throw error;
     }
   }

@@ -324,4 +324,30 @@ export class AuthService {
       throw new Error('Token inválido ou expirado');
     }
   }
+
+  /**
+   * Obtém o perfil do usuário
+   */
+  async getProfile(userId: string): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: IUser 
+  }> {
+    try {
+      const user = await User.findById(userId).select('-password -refreshToken');
+      
+      if (!user) {
+        throw new Error('Usuário não encontrado');
+      }
+
+      return {
+        success: true,
+        message: 'Perfil obtido com sucesso',
+        data: user
+      };
+    } catch (error: any) {
+      console.error(`Erro ao obter perfil do usuário ${userId}: ${error.message}`);
+      throw error;
+    }
+  }
 }
