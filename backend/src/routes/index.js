@@ -22,7 +22,7 @@ const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Etchi API - Entregas Colaborativas em Angola',
+      title: 'Etchi API - Entregas Colaborativas',
       version: '1.0.0',
       description: 'API para sistema de entregas colaborativas Etchi',
       contact: {
