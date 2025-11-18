@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');
-const AuthController = require('../controllers/auth.controller');
+const { AuthController } = require('../controllers/auth.controller');
 const { authenticateJWT } = require('../middleware/auth');
 const { handleValidationErrors, validateRegister, validateLogin } = require('../middleware/validation');
 

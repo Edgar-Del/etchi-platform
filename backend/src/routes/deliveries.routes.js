@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { body, param, query } = require('express-validator');
-const DeliveriesController = require('../controllers/deliveries.controller');
+const { DeliveriesController } = require('../controllers/deliveries.controller');
 const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
 const { handleValidationErrors } = require('../middleware/validation');
 

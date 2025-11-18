@@ -48,4 +48,24 @@ export class AuthController extends BaseController {
       this.errorResponse(res, error.message, 401);
     }
   };
+
+  forgotPassword = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { email } = req.body;
+      const result = await this.authService.resetPassword(email);
+      this.successResponse(res, result, 'Se o email existir, enviaremos instruções de recuperação');
+    } catch (error: any) {
+      this.errorResponse(res, error.message, 400);
+    }
+  };
+
+  resetPassword = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { token, newPassword } = req.body;
+      const result = await this.authService.changePasswordWithToken({ token, newPassword });
+      this.successResponse(res, result, 'Password alterada com sucesso');
+    } catch (error: any) {
+      this.errorResponse(res, error.message, 400);
+    }
+  };
 }

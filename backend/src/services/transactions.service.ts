@@ -262,9 +262,9 @@ export class TransactionsService {
         },
       }], { session });
 
-      // Atualizar saldo do usuário (implementar se tiver campo de wallet no User model)
-      // user.walletBalance += amount;
-      // await user.save({ session });
+      // Atualizar saldo do usuário
+      user.walletBalance = (user.walletBalance || 0) + amount;
+      await user.save({ session });
 
       await session.commitTransaction();
 
@@ -303,10 +303,10 @@ export class TransactionsService {
       const userResult = await this.usersService.findById(userId);
       const user = userResult.data;
 
-      // Verificar saldo suficiente (quando implementado)
-      // if (user.walletBalance < amount) {
-      //   throw new Error('Saldo insuficiente');
-      // }
+      // Verificar saldo suficiente
+      if (!user.walletBalance || user.walletBalance < amount) {
+        throw new Error('Saldo insuficiente');
+      }
 
       // Criar transação de saque
       const reference = this.generateTransactionReference();
@@ -336,8 +336,8 @@ export class TransactionsService {
         transaction[0].completedAt = new Date();
         
         // Atualizar saldo do usuário
-        // user.walletBalance -= amount;
-        // await user.save({ session });
+        user.walletBalance -= amount;
+        await user.save({ session });
       } else {
         transaction[0].status = TransactionStatus.FAILED;
         transaction[0].failureReason = payoutResult.message;
@@ -517,17 +517,16 @@ export class TransactionsService {
       const userResult = await this.usersService.findById(transaction.customerId.toString());
       const user = userResult.data;
 
-      // Implementar verificação de saldo quando tiver campo wallet
-      // if (user.walletBalance < transaction.amount) {
-      //   return {
-      //     status: TransactionStatus.FAILED,
-      //     details: { failureReason: 'Saldo insuficiente' },
-      //   };
-      // }
+      if (!user.walletBalance || user.walletBalance < transaction.amount) {
+        return {
+          status: TransactionStatus.FAILED,
+          details: { failureReason: 'Saldo insuficiente' },
+        };
+      }
 
       // Debitar da carteira
-      // user.walletBalance -= transaction.amount;
-      // await user.save({ session });
+      user.walletBalance -= transaction.amount;
+      await user.save({ session });
 
       return {
         status: TransactionStatus.COMPLETED,

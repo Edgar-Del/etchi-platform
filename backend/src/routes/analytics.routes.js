@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { query } = require('express-validator');
-const AnalyticsController = require('../controllers/analytics.controller');
+const { AnalyticsController } = require('../controllers/analytics.controller');
 const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
 const { handleValidationErrors } = require('../middleware/validation');
 

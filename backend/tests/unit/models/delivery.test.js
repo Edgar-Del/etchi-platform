@@ -1,4 +1,4 @@
-const Delivery = require('../../../src/models/Delivery');
+const Delivery = require('../../../src/models/DeliveryRequest.model');
 const User = require('../../../src/models/User');
 
 describe('Delivery Model', () => {

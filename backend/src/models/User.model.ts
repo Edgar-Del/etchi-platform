@@ -215,6 +215,36 @@ const userSchema = new Schema<IUser>({
     type: Number,
     default: 0
   },
+  walletBalance: {
+    type: Number,
+    default: 0,
+    min: [0, 'Saldo não pode ser negativo']
+  },
+  fcmTokens: [{
+    token: {
+      type: String,
+      required: true
+    },
+    deviceId: {
+      type: String,
+      required: true
+    },
+    platform: {
+      type: String,
+      enum: ['ios', 'android'],
+      required: true
+    },
+    lastUsed: {
+      type: Date,
+      default: Date.now
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }],
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
   lastActive: {
     type: Date,
     default: Date.now

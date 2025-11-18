@@ -135,4 +135,15 @@ export class DeliveriesController extends BaseController {
       this.errorResponse(res, error.message, 400);
     }
   };
+
+  assignCourier = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+
+      const assignmentResult = await this.deliveriesService.assignCourier(id);
+      this.successResponse(res, assignmentResult.data, 'Entregador atribuído com sucesso');
+    } catch (error: any) {
+      this.errorResponse(res, error.message, 400);
+    }
+  };
 }

@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { body, param, query } = require('express-validator');
-const SmartPointsController = require('../controllers/smart-points.controller');
+const { SmartPointsController } = require('../controllers/smart-points.controller');
 const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
 const { handleValidationErrors } = require('../middleware/validation');
 

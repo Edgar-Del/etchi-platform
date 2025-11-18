@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { body, param, query } = require('express-validator');
-const UsersController = require('../controllers/users.controller');
+const { UsersController } = require('../controllers/users.controller');
 const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
 const { handleValidationErrors } = require('../middleware/validation');
 
@@ -235,6 +235,131 @@ router.get('/nearby/couriers',
   query('radius').optional().isInt({ min: 100, max: 50000 }),
   handleValidationErrors,
   usersController.getNearbyCouriers
+);
+
+/**
+ * @swagger
+ * /api/users/{id}/wallet/balance:
+ *   get:
+ *     summary: Obter saldo da carteira do usuário
+ *     tags: [Utilizadores]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Saldo obtido com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     balance:
+ *                       type: number
+ *       404:
+ *         description: Usuário não encontrado
+ */
+router.get('/:id/wallet/balance',
+  authenticateJWT,
+  param('id').isMongoId(),
+  handleValidationErrors,
+  usersController.getWalletBalance
+);
+
+/**
+ * @swagger
+ * /api/users/{id}/fcm-token:
+ *   post:
+ *     summary: Registrar token FCM para notificações push
+ *     tags: [Utilizadores]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - deviceId
+ *               - platform
+ *             properties:
+ *               token:
+ *                 type: string
+ *                 description: Token FCM do dispositivo
+ *               deviceId:
+ *                 type: string
+ *                 description: ID único do dispositivo
+ *               platform:
+ *                 type: string
+ *                 enum: [ios, android]
+ *                 description: Plataforma do dispositivo
+ *     responses:
+ *       200:
+ *         description: Token registrado com sucesso
+ *       400:
+ *         description: Dados inválidos
+ */
+router.post('/:id/fcm-token',
+  authenticateJWT,
+  param('id').isMongoId(),
+  body('token').notEmpty().isString(),
+  body('deviceId').notEmpty().isString(),
+  body('platform').isIn(['ios', 'android']),
+  handleValidationErrors,
+  usersController.registerFCMToken
+);
+
+/**
+ * @swagger
+ * /api/users/{id}/fcm-token:
+ *   delete:
+ *     summary: Remover token FCM do dispositivo
+ *     tags: [Utilizadores]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: deviceId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Token removido com sucesso
+ *       404:
+ *         description: Token não encontrado
+ */
+router.delete('/:id/fcm-token',
+  authenticateJWT,
+  param('id').isMongoId(),
+  query('deviceId').notEmpty(),
+  handleValidationErrors,
+  usersController.removeFCMToken
 );
 
 module.exports = router;

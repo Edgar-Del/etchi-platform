@@ -32,12 +32,21 @@ export class NotificationsService {
    */
   private initializeFirebase() {
     try {
+      const projectId = process.env.FIREBASE_PROJECT_ID;
+      const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+      const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+      if (!projectId || !clientEmail || !privateKey) {
+        console.warn('Firebase Admin não configurado - variáveis de ambiente ausentes');
+        return;
+      }
+
       if (admin.apps.length === 0) {
         this.firebaseAdmin = admin.initializeApp({
           credential: admin.credential.cert({
-            projectId: process.env.FIREBASE_PROJECT_ID,
-            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+            projectId,
+            clientEmail,
+            privateKey: privateKey.replace(/\\n/g, '\n'),
           }),
         });
         console.log('Firebase Admin SDK inicializado com sucesso');
@@ -263,10 +272,13 @@ export class NotificationsService {
         return false;
       }
 
-      // Mock - em produção, buscar tokens reais do usuário
-      const fcmTokens = ['mock_fcm_token'];
+      // Buscar tokens reais do usuário
+      const fcmTokens = user.fcmTokens
+        ?.filter((tokenData: any) => tokenData.token)
+        .map((tokenData: any) => tokenData.token) || [];
 
       if (fcmTokens.length === 0) {
+        console.warn(`Usuário ${user._id} não possui tokens FCM registrados`);
         return false;
       }
 

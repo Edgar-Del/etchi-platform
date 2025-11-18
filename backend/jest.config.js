@@ -4,6 +4,7 @@ module.exports = {
   collectCoverageFrom: [
     'src/**/*.js',
     '!src/**/*.test.js',
+    '!src/tests/**/*.js'
   ],
   coverageReporters: ['text', 'lcov', 'html'],
   testMatch: ['**/tests/**/*.test.js'],
@@ -12,5 +13,13 @@ module.exports = {
   forceExit: true,
   clearMocks: true,
   resetMocks: true,
-  restoreMocks: true
+  restoreMocks: true,
+  moduleNameMapping: {
+    '^src/(.*)$': '<rootDir>/src/$1'
+  },
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/dist/',
+    '/build/'
+  ]
 };

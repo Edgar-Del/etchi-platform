@@ -12,7 +12,7 @@
     "resolveJsonModule": true,
     "moduleResolution": "node"
   },
-  "include": ["src/**/*", "server.js", "jest.config.js"],
+  "include": ["src/**/*", "server.js", "jest.config.js", "scripts"],
   "exclude": ["node_modules", "dist"],
   "ts-node": {
     "transpileOnly": true,

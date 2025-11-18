@@ -103,4 +103,60 @@ export class UsersController extends BaseController {
       this.errorResponse(res, error.message, 400);
     }
   };
+
+  getWalletBalance = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      
+      // Verificar se o usuário está consultando seu próprio saldo ou é admin
+      const currentUser = (req as any).user;
+      if (currentUser.id !== id && currentUser.role !== 'ADMIN') {
+        this.errorResponse(res, 'Não autorizado', 403);
+        return;
+      }
+      
+      const balanceResult = await this.usersService.getWalletBalance(id);
+      this.successResponse(res, balanceResult.data, 'Saldo obtido com sucesso');
+    } catch (error: any) {
+      this.errorResponse(res, error.message, 400);
+    }
+  };
+
+  registerFCMToken = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { token, deviceId, platform } = req.body;
+      
+      // Verificar se o usuário está registrando seu próprio token
+      const currentUser = (req as any).user;
+      if (currentUser.id !== id) {
+        this.errorResponse(res, 'Não autorizado', 403);
+        return;
+      }
+      
+      const result = await this.usersService.registerFCMToken(id, token, deviceId, platform);
+      this.successResponse(res, result.data, 'Token FCM registrado com sucesso');
+    } catch (error: any) {
+      this.errorResponse(res, error.message, 400);
+    }
+  };
+
+  removeFCMToken = async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { id } = req.params;
+      const { deviceId } = req.query;
+      
+      // Verificar se o usuário está removendo seu próprio token
+      const currentUser = (req as any).user;
+      if (currentUser.id !== id) {
+        this.errorResponse(res, 'Não autorizado', 403);
+        return;
+      }
+      
+      await this.usersService.removeFCMToken(id, deviceId as string);
+      this.successResponse(res, null, 'Token FCM removido com sucesso');
+    } catch (error: any) {
+      this.errorResponse(res, error.message, 400);
+    }
+  };
 }

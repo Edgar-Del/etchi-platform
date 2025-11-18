@@ -262,4 +262,116 @@ export class UsersService {
       throw error;
     }
   }
+
+  /**
+   * Registra ou atualiza token FCM do usuário
+   */
+  async registerFCMToken(
+    userId: string,
+    token: string,
+    deviceId: string,
+    platform: 'ios' | 'android'
+  ): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: IUser 
+  }> {
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error('Usuário não encontrado');
+      }
+
+      // Remover token antigo do mesmo dispositivo se existir
+      if (user.fcmTokens) {
+        user.fcmTokens = user.fcmTokens.filter(
+          (t: any) => t.deviceId !== deviceId
+        );
+      } else {
+        user.fcmTokens = [];
+      }
+
+      // Adicionar novo token
+      user.fcmTokens.push({
+        token,
+        deviceId,
+        platform,
+        lastUsed: new Date(),
+        createdAt: new Date()
+      });
+
+      await user.save();
+
+      console.log(`Token FCM registrado para usuário: ${userId}`);
+
+      return {
+        success: true,
+        message: 'Token FCM registrado com sucesso',
+        data: user
+      };
+    } catch (error: any) {
+      console.error(`Erro ao registrar token FCM: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Remove token FCM do usuário
+   */
+  async removeFCMToken(
+    userId: string,
+    deviceId: string
+  ): Promise<{ 
+    success: boolean; 
+    message: string; 
+  }> {
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        throw new Error('Usuário não encontrado');
+      }
+
+      if (user.fcmTokens) {
+        user.fcmTokens = user.fcmTokens.filter(
+          (t: any) => t.deviceId !== deviceId
+        );
+        await user.save();
+      }
+
+      console.log(`Token FCM removido para usuário: ${userId}`);
+
+      return {
+        success: true,
+        message: 'Token FCM removido com sucesso'
+      };
+    } catch (error: any) {
+      console.error(`Erro ao remover token FCM: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtém saldo da carteira do usuário
+   */
+  async getWalletBalance(userId: string): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: { balance: number } 
+  }> {
+    try {
+      const user = await User.findById(userId).select('walletBalance');
+      if (!user) {
+        throw new Error('Usuário não encontrado');
+      }
+
+      return {
+        success: true,
+        message: 'Saldo obtido com sucesso',
+        data: { balance: user.walletBalance || 0 }
+      };
+    } catch (error: any) {
+      console.error(`Erro ao obter saldo: ${error.message}`);
+      throw error;
+    }
+  }
 }

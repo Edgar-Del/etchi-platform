@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const { body, param } = require('express-validator');
-const ReviewsController = require('../controllers/reviews.controller');
+const { ReviewsController } = require('../controllers/reviews.controller');
 const { authenticateJWT } = require('../middleware/auth');
 const { handleValidationErrors } = require('../middleware/validation');
 
