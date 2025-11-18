@@ -3,6 +3,10 @@ import admin from 'firebase-admin';
 import fs from 'fs';
 import path from 'path';
 
+// Cache para evitar múltiplas inicializações
+let firebaseAppInstance: admin.app.App | null = null;
+let initializationAttempted = false;
+
 /**
  * Inicializa o Firebase Admin SDK de forma resiliente
  * Suporta duas formas de configuração:
@@ -11,9 +15,21 @@ import path from 'path';
  */
 const initFirebaseAdmin = (): admin.app.App | null => {
   // Se já foi inicializado, retornar a instância existente
-  if (admin.apps.length > 0) {
-    return admin.app();
+  if (firebaseAppInstance) {
+    return firebaseAppInstance;
   }
+
+  if (admin.apps.length > 0) {
+    firebaseAppInstance = admin.app();
+    return firebaseAppInstance;
+  }
+
+  // Se já tentamos inicializar e falhou, não tentar novamente
+  if (initializationAttempted) {
+    return null;
+  }
+
+  initializationAttempted = true;
 
   try {
     // Método 1: Usar arquivo de credenciais via GOOGLE_APPLICATION_CREDENTIALS
@@ -27,8 +43,9 @@ const initFirebaseAdmin = (): admin.app.App | null => {
           credential: admin.credential.cert(serviceAccount),
         });
         
+        firebaseAppInstance = admin.app();
         console.info('✅ Firebase Admin inicializado usando arquivo de service account:', keyPath);
-        return admin.app();
+        return firebaseAppInstance;
       } catch (error: any) {
         console.warn('⚠️  Erro ao ler arquivo de service account:', error.message);
       }
@@ -53,11 +70,12 @@ const initFirebaseAdmin = (): admin.app.App | null => {
         }),
       });
       
+      firebaseAppInstance = admin.app();
       console.info('✅ Firebase Admin inicializado usando variáveis de ambiente');
-      return admin.app();
+      return firebaseAppInstance;
     }
 
-    // Nenhuma configuração encontrada
+    // Nenhuma configuração encontrada - mostrar aviso apenas na primeira tentativa
     console.warn('⚠️  Firebase Admin não configurado - variáveis de ambiente ausentes');
     console.warn('   Configure uma das opções:');
     console.warn('   1. GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json');
