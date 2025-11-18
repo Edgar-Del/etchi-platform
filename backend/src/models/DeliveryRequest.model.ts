@@ -188,15 +188,13 @@ const deliveryRequestSchema = new Schema<IDeliveryRequest>({
   trackingCode: {
     type: String,
     required: true,
-    unique: true,
     uppercase: true,
     match: [/^ETC[0-9]{10}$/, 'Formato de código de rastreamento inválido']
   },
   customerId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    index: true
+    required: true
   },
   deliveryPartnerId: {
     type: Schema.Types.ObjectId,
@@ -261,8 +259,7 @@ const deliveryRequestSchema = new Schema<IDeliveryRequest>({
   status: {
     type: String,
     enum: Object.values(DeliveryStatus),
-    default: DeliveryStatus.PENDING,
-    index: true
+    default: DeliveryStatus.PENDING
   },
   deliveryType: {
     type: String,

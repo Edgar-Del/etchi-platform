@@ -7,14 +7,15 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import { clerkMiddleware } from '@clerk/express'
+
+// Carregar variáveis de ambiente PRIMEIRO, antes de qualquer outra coisa
+dotenv.config();
+
 const connectDatabase = require('./config/database');
 import apiRoutes from './routes/index';
 import { errorHandler as errorMiddleware } from './middleware/error.middleware';
 import { notFoundMiddleware } from './middleware/notFound.middleware';
 import { securityMiddleware, securityHeaders } from './middleware/security.middleware';
-
-
-dotenv.config();
 
 const app = express();
 const server = createServer(app);

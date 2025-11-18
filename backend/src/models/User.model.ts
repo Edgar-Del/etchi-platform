@@ -156,8 +156,7 @@ const userSchema = new Schema<IUser>({
   userType: {
     type: String,
     enum: Object.values(UserType),
-    required: true,
-    index: true
+    required: true
   },
   location: {
     type: {

@@ -56,6 +56,11 @@ const initFirebaseAdmin = (): admin.app.App | null => {
     const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
     let privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
+    // Debug: verificar se as variáveis estão sendo lidas (apenas em desenvolvimento)
+    if (process.env.NODE_ENV === 'development' && !projectId && !clientEmail && !privateKey) {
+      console.warn('⚠️  Debug: Variáveis Firebase não encontradas. Verifique se o .env está sendo carregado.');
+    }
+
     if (privateKey) {
       // Substituir \n literais por quebras de linha reais
       privateKey = privateKey.replace(/\\n/g, '\n');

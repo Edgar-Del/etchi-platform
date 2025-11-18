@@ -147,7 +147,6 @@ const notificationSchema = new Schema<INotification>({
   readAt: Date,
   expiresAt: {
     type: Date,
-    index: true,
     validate: {
       validator: function(date: Date): boolean {
         return !date || date > new Date();

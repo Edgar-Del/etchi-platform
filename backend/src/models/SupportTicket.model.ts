@@ -102,20 +102,17 @@ const supportTicketSchema = new Schema<ISupportTicket>({
   ticketNumber: {
     type: String,
     required: true,
-    unique: true,
     uppercase: true,
     match: [/^TKT[0-9]{8}$/, 'Formato de número de ticket inválido']
   },
   userId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    index: true
+    required: true
   },
   assignedAgentId: {
     type: Schema.Types.ObjectId,
-    ref: 'User',
-    index: true
+    ref: 'User'
   },
   subject: {
     type: String,
@@ -132,20 +129,17 @@ const supportTicketSchema = new Schema<ISupportTicket>({
   category: {
     type: String,
     enum: Object.values(SupportCategory),
-    required: true,
-    index: true
+    required: true
   },
   priority: {
     type: String,
     enum: Object.values(TicketPriority),
-    default: TicketPriority.MEDIUM,
-    index: true
+    default: TicketPriority.MEDIUM
   },
   status: {
     type: String,
     enum: Object.values(TicketStatus),
-    default: TicketStatus.OPEN,
-    index: true
+    default: TicketStatus.OPEN
   },
   messages: [{
     senderId: {
@@ -177,13 +171,11 @@ const supportTicketSchema = new Schema<ISupportTicket>({
     }
   }],
   relatedEntityId: {
-    type: Schema.Types.ObjectId,
-    index: true
+    type: Schema.Types.ObjectId
   },
   relatedEntityType: {
     type: String,
-    enum: ['DeliveryRequest', 'Transaction', 'User'],
-    index: true
+    enum: ['DeliveryRequest', 'Transaction', 'User']
   },
   satisfactionRating: {
     type: Number,

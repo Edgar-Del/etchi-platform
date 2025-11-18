@@ -90,33 +90,28 @@ const transactionSchema = new Schema<ITransaction>({
   reference: {
     type: String,
     required: true,
-    unique: true,
     uppercase: true,
     match: [/^TXN[0-9]{12}$/, 'Formato de referência inválido']
   },
   deliveryRequestId: {
     type: Schema.Types.ObjectId,
     ref: 'DeliveryRequest',
-    required: true,
-    index: true
+    required: true
   },
   customerId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    index: true
+    required: true
   },
   deliveryPartnerId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    index: true
+    required: true
   },
   type: {
     type: String,
     enum: Object.values(TransactionType),
-    required: true,
-    index: true
+    required: true
   },
   paymentMethod: {
     type: String,
@@ -126,8 +121,7 @@ const transactionSchema = new Schema<ITransaction>({
   status: {
     type: String,
     enum: Object.values(TransactionStatus),
-    default: TransactionStatus.PENDING,
-    index: true
+    default: TransactionStatus.PENDING
   },
   amount: {
     type: Number,

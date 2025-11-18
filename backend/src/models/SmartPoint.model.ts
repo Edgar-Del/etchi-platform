@@ -97,7 +97,6 @@ const smartPointSchema = new Schema<ISmartPoint>({
   code: {
     type: String,
     required: true,
-    unique: true,
     uppercase: true,
     match: [/^SP[0-9]{4}$/, 'Formato de código inválido (ex: SP0001)']
   },
@@ -115,8 +114,7 @@ const smartPointSchema = new Schema<ISmartPoint>({
   managerId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    index: true
+    required: true
   },
   contactPhone: {
     type: String,
@@ -158,8 +156,7 @@ const smartPointSchema = new Schema<ISmartPoint>({
   status: {
     type: String,
     enum: Object.values(SmartPointStatus),
-    default: SmartPointStatus.ACTIVE,
-    index: true
+    default: SmartPointStatus.ACTIVE
   },
   services: [{
     type: String,
