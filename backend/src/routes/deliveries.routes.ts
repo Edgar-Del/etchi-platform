@@ -1,11 +1,11 @@
-// src/routes/deliveries.routes.js
-const express = require('express');
-const router = express.Router();
-const { body, param, query } = require('express-validator');
-const { DeliveriesController } = require('../controllers/deliveries.controller');
-const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
-const { handleValidationErrors } = require('../middleware/validation');
+// src/routes/deliveries.routes.ts
+import express, { Router } from 'express';
+import { body, param, query } from 'express-validator';
+import { DeliveriesController } from '../controllers/deliveries.controller';
+import { authenticateJWT, authorizeRoles } from '../middleware/auth';
+import { handleValidationErrors } from '../middleware/validation';
 
+const router: Router = express.Router();
 const deliveriesController = new DeliveriesController();
 
 /**
@@ -222,4 +222,5 @@ router.get('/:id/track',
   deliveriesController.trackDelivery
 );
 
-module.exports = router;
+export default router;
+

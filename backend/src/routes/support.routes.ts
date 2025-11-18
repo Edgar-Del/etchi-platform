@@ -1,11 +1,11 @@
-// src/routes/support.routes.js
-const express = require('express');
-const router = express.Router();
-const { body, param } = require('express-validator');
-const { SupportController } = require('../controllers/support.controller');
-const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
-const { handleValidationErrors } = require('../middleware/validation');
+// src/routes/support.routes.ts
+import express, { Router } from 'express';
+import { body, param } from 'express-validator';
+import { SupportController } from '../controllers/support.controller';
+import { authenticateJWT, authorizeRoles } from '../middleware/auth';
+import { handleValidationErrors } from '../middleware/validation';
 
+const router: Router = express.Router();
 const supportController = new SupportController();
 
 /**
@@ -63,7 +63,7 @@ router.post('/ticket',
  */
 router.get('/tickets',
   authenticateJWT,
-  supportController.getUserTickets
+  supportController.getMyTickets
 );
 
 /**
@@ -88,7 +88,7 @@ router.get('/tickets/:id',
   authenticateJWT,
   param('id').isMongoId(),
   handleValidationErrors,
-  supportController.getTicket
+  supportController.getTicketById
 );
 
 /**
@@ -125,7 +125,7 @@ router.post('/tickets/:id/reply',
   param('id').isMongoId(),
   body('message').notEmpty(),
   handleValidationErrors,
-  supportController.addReply
+  supportController.addMessage
 );
 
 /**
@@ -164,7 +164,8 @@ router.put('/tickets/:id/status',
   param('id').isMongoId(),
   body('status').isIn(['open', 'in_progress', 'resolved', 'closed']),
   handleValidationErrors,
-  supportController.updateTicketStatus
+  supportController.updateStatus
 );
 
-module.exports = router;
+export default router;
+

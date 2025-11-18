@@ -99,10 +99,47 @@ JWT_REFRESH_SECRET=seu-refresh-secret-aqui
 GOOGLE_MAPS_API_KEY=sua-chave-google-maps
 
 # Firebase (para notificações push)
+# Opção 1: Usar arquivo de service account (recomendado)
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/firebase-service-account.json
+
+# Opção 2: Usar variáveis de ambiente
 FIREBASE_PROJECT_ID=seu-project-id
 FIREBASE_CLIENT_EMAIL=seu-client-email
-FIREBASE_PRIVATE_KEY=sua-private-key
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 ```
+
+### Configuração do Firebase
+
+O Firebase Admin SDK pode ser configurado de duas formas:
+
+#### Opção 1: Arquivo de Service Account (Recomendado)
+
+1. Baixe o arquivo JSON de service account do Firebase Console
+2. Salve o arquivo em um local seguro (ex: `backend/config/firebase-service-account.json`)
+3. Configure a variável de ambiente:
+   ```bash
+   export GOOGLE_APPLICATION_CREDENTIALS=/path/to/firebase-service-account.json
+   ```
+   Ou adicione no `.env`:
+   ```env
+   GOOGLE_APPLICATION_CREDENTIALS=/path/to/firebase-service-account.json
+   ```
+
+#### Opção 2: Variáveis de Ambiente
+
+Configure as seguintes variáveis no `.env`:
+```env
+FIREBASE_PROJECT_ID=seu-project-id
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@seu-projeto.iam.gserviceaccount.com
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+```
+
+**Nota:** O `FIREBASE_PRIVATE_KEY` deve incluir as quebras de linha (`\n`) e estar entre aspas.
+
+**Importante:** 
+- ⚠️ Nunca commite arquivos de credenciais do Firebase no repositório
+- ✅ Adicione `*.json` de service accounts ao `.gitignore`
+- ✅ Use variáveis de ambiente em produção
 
 ### Variáveis Opcionais
 

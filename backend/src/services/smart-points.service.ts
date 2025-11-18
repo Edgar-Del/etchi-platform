@@ -1,5 +1,6 @@
 // src/services/smart-points.service.ts
 import { SmartPoint, ISmartPoint, SmartPointStatus } from '../models/SmartPoint.model';
+export { SmartPointStatus };
 
 export interface CreateSmartPointDto {
   name: string;
@@ -25,6 +26,31 @@ export interface UpdateSmartPointDto {
 }
 
 export class SmartPointsService {
+  /**
+   * Lista todos os pontos inteligentes
+   */
+  async findAll(): Promise<{
+    success: boolean;
+    message: string;
+    data: ISmartPoint[];
+  }> {
+    try {
+      const points = await SmartPoint.find()
+        .populate('managerId', 'name phone email')
+        .sort({ createdAt: -1 })
+        .exec();
+
+      return {
+        success: true,
+        message: 'Pontos inteligentes listados com sucesso',
+        data: points,
+      };
+    } catch (error: any) {
+      console.error(`Erro ao listar pontos inteligentes: ${error.message}`);
+      throw error;
+    }
+  }
+
   /**
    * Cria um novo ponto inteligente
    */

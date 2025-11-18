@@ -1,11 +1,11 @@
-// src/routes/auth.routes.js
-const express = require('express');
-const router = express.Router();
-const { body } = require('express-validator');
-const { AuthController } = require('../controllers/auth.controller');
-const { authenticateJWT } = require('../middleware/auth');
-const { handleValidationErrors, validateRegister, validateLogin } = require('../middleware/validation');
+// src/routes/auth.routes.ts
+import express, { Router } from 'express';
+import { body } from 'express-validator';
+import { AuthController } from '../controllers/auth.controller';
+import { authenticateJWT } from '../middleware/auth';
+import { handleValidationErrors, validateRegister, validateLogin } from '../middleware/validation';
 
+const router: Router = express.Router();
 const authController = new AuthController();
 
 /**
@@ -84,7 +84,7 @@ const authController = new AuthController();
  *       400:
  *         description: Dados inválidos
  */
-router.post('/register', validateRegister, handleValidationErrors, authController.register);
+router.post('/register', ...validateRegister, handleValidationErrors, authController.register);
 
 /**
  * @swagger
@@ -116,7 +116,7 @@ router.post('/register', validateRegister, handleValidationErrors, authControlle
  *       401:
  *         description: Credenciais inválidas
  */
-router.post('/login', validateLogin, handleValidationErrors, authController.login);
+router.post('/login', ...validateLogin, handleValidationErrors, authController.login);
 
 /**
  * @swagger
@@ -236,4 +236,5 @@ router.post('/reset-password',
  */
 router.get('/me', authenticateJWT, authController.getProfile);
 
-module.exports = router;
+export default router;
+

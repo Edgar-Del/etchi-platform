@@ -1,11 +1,11 @@
-// src/routes/analytics.routes.js
-const express = require('express');
-const router = express.Router();
-const { query } = require('express-validator');
-const { AnalyticsController } = require('../controllers/analytics.controller');
-const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
-const { handleValidationErrors } = require('../middleware/validation');
+// src/routes/analytics.routes.ts
+import express, { Router } from 'express';
+import { query } from 'express-validator';
+import { AnalyticsController } from '../controllers/analytics.controller';
+import { authenticateJWT, authorizeRoles } from '../middleware/auth';
+import { handleValidationErrors } from '../middleware/validation';
 
+const router: Router = express.Router();
 const analyticsController = new AnalyticsController();
 
 /**
@@ -113,4 +113,5 @@ router.get('/revenue',
   analyticsController.getRevenueData
 );
 
-module.exports = router;
+export default router;
+

@@ -1,11 +1,11 @@
-// src/routes/reviews.routes.js
-const express = require('express');
-const router = express.Router();
-const { body, param } = require('express-validator');
-const { ReviewsController } = require('../controllers/reviews.controller');
-const { authenticateJWT } = require('../middleware/auth');
-const { handleValidationErrors } = require('../middleware/validation');
+// src/routes/reviews.routes.ts
+import express, { Router } from 'express';
+import { body, param } from 'express-validator';
+import { ReviewsController } from '../controllers/reviews.controller';
+import { authenticateJWT } from '../middleware/auth';
+import { handleValidationErrors } from '../middleware/validation';
 
+const router: Router = express.Router();
 const reviewsController = new ReviewsController();
 
 /**
@@ -100,4 +100,5 @@ router.get('/average/:id',
   reviewsController.getAverageRating
 );
 
-module.exports = router;
+export default router;
+

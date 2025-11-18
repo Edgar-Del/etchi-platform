@@ -3,6 +3,7 @@ import admin from 'firebase-admin';
 import { Notification, INotification, NotificationType, NotificationPriority } from '../models/Notification.model';
 import { EmailService } from './email.service';
 import { UsersService } from './users.service';
+import initFirebaseAdmin from '../utils/firebase';
 
 export interface CreateNotificationDto {
   userId: string;
@@ -28,31 +29,15 @@ export class NotificationsService {
   }
 
   /**
-   * Inicializa o Firebase Admin SDK
+   * Inicializa o Firebase Admin SDK usando o utilitário centralizado
    */
   private initializeFirebase() {
     try {
-      const projectId = process.env.FIREBASE_PROJECT_ID;
-      const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-      const privateKey = process.env.FIREBASE_PRIVATE_KEY;
-
-      if (!projectId || !clientEmail || !privateKey) {
-        console.warn('Firebase Admin não configurado - variáveis de ambiente ausentes');
-        return;
-      }
-
-      if (admin.apps.length === 0) {
-        this.firebaseAdmin = admin.initializeApp({
-          credential: admin.credential.cert({
-            projectId,
-            clientEmail,
-            privateKey: privateKey.replace(/\\n/g, '\n'),
-          }),
-        });
-        console.log('Firebase Admin SDK inicializado com sucesso');
-      }
+      const firebaseApp = initFirebaseAdmin();
+      this.firebaseAdmin = firebaseApp;
     } catch (error: any) {
       console.error('Erro ao inicializar Firebase Admin SDK:', error);
+      this.firebaseAdmin = null;
     }
   }
 

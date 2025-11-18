@@ -1,11 +1,11 @@
-// src/routes/addresses.routes.js
-const express = require('express');
-const router = express.Router();
-const { body, param } = require('express-validator');
-const { AddressesController } = require('../controllers/addresses.controller');
-const { authenticateJWT } = require('../middleware/auth');
-const { handleValidationErrors } = require('../middleware/validation');
+// src/routes/addresses.routes.ts
+import express, { Router } from 'express';
+import { body, param } from 'express-validator';
+import { AddressesController } from '../controllers/addresses.controller';
+import { authenticateJWT } from '../middleware/auth';
+import { handleValidationErrors } from '../middleware/validation';
 
+const router: Router = express.Router();
 const addressesController = new AddressesController();
 
 /**
@@ -31,7 +31,7 @@ const addressesController = new AddressesController();
  *             properties:
  *               name:
  *                 type: string
- *                 description: Nome do endereço (ex: Casa, Trabalho)
+ *                 description: "Nome do endereço (ex: Casa, Trabalho)"
  *               street:
  *                 type: string
  *               city:
@@ -142,4 +142,5 @@ router.delete('/:id',
   addressesController.deleteAddress
 );
 
-module.exports = router;
+export default router;
+

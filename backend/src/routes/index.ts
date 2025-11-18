@@ -1,23 +1,23 @@
-// src/routes/index.js
-const express = require('express');
-const router = express.Router();
+// src/routes/index.ts
+import express, { Router } from 'express';
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 
 // Importar todas as rotas
-const authRoutes = require('./auth.routes');
-const userRoutes = require('./users.routes');
-const addressRoutes = require('./addresses.routes');
-const deliveryRoutes = require('./deliveries.routes');
-const transactionRoutes = require('./transactions.routes');
-const smartPointRoutes = require('./smartpoints.routes');
-const notificationRoutes = require('./notifications.routes');
-const supportRoutes = require('./support.routes');
-const reviewRoutes = require('./reviews.routes');
-const analyticsRoutes = require('./analytics.routes');
+import authRoutes from './auth.routes';
+import userRoutes from './users.routes';
+import addressRoutes from './addresses.routes';
+import deliveryRoutes from './deliveries.routes';
+import transactionRoutes from './transactions.routes';
+import smartPointRoutes from './smartpoints.routes';
+import notificationRoutes from './notifications.routes';
+import supportRoutes from './support.routes';
+import reviewRoutes from './reviews.routes';
+import analyticsRoutes from './analytics.routes';
+
+const router: Router = express.Router();
 
 // Configurar Swagger
-const swaggerJsdoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
-
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -49,7 +49,7 @@ const swaggerOptions = {
       bearerAuth: []
     }]
   },
-  apis: ['./src/routes/*.js']
+  apis: ['./src/routes/*.ts']
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
@@ -87,4 +87,5 @@ router.use('*', (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;
+

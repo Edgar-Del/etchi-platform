@@ -1,11 +1,11 @@
-// src/routes/users.routes.js
-const express = require('express');
-const router = express.Router();
-const { body, param, query } = require('express-validator');
-const { UsersController } = require('../controllers/users.controller');
-const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
-const { handleValidationErrors } = require('../middleware/validation');
+// src/routes/users.routes.ts
+import express, { Router } from 'express';
+import { body, param, query } from 'express-validator';
+import { UsersController } from '../controllers/users.controller';
+import { authenticateJWT, authorizeRoles } from '../middleware/auth';
+import { handleValidationErrors } from '../middleware/validation';
 
+const router: Router = express.Router();
 const usersController = new UsersController();
 
 /**
@@ -362,4 +362,5 @@ router.delete('/:id/fcm-token',
   usersController.removeFCMToken
 );
 
-module.exports = router;
+export default router;
+

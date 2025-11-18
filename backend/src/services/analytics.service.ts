@@ -39,7 +39,7 @@ export class AnalyticsService {
         revenueStats,
         performanceStats,
       ] = await Promise.all([
-        this.getDeliveryStats(),
+        this.getDeliveryStatsInternal(),
         this.getUserStats(),
         this.getRevenueStats(),
         this.getPerformanceStats(),
@@ -366,9 +366,30 @@ export class AnalyticsService {
   }
 
   /**
-   * Obtém estatísticas de entregas
+   * Obtém estatísticas de entregas (método público)
    */
-  private async getDeliveryStats(): Promise<any> {
+  async getDeliveryStats(period?: string): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: any 
+  }> {
+    try {
+      const stats = await this.getDeliveryStatsInternal();
+      return {
+        success: true,
+        message: 'Estatísticas de entregas obtidas com sucesso',
+        data: stats
+      };
+    } catch (error: any) {
+      console.error(`Erro ao obter estatísticas de entregas: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtém estatísticas de entregas (método privado)
+   */
+  private async getDeliveryStatsInternal(): Promise<any> {
     const stats = await DeliveryRequest.aggregate([
       {
         $facet: {
@@ -476,7 +497,28 @@ export class AnalyticsService {
   }
 
   /**
-   * Obtém estatísticas de receita
+   * Obtém dados de receita (método público)
+   */
+  async getRevenueData(startDate?: Date, endDate?: Date): Promise<{ 
+    success: boolean; 
+    message: string; 
+    data: any 
+  }> {
+    try {
+      const stats = await this.getRevenueStats();
+      return {
+        success: true,
+        message: 'Dados de receita obtidos com sucesso',
+        data: stats
+      };
+    } catch (error: any) {
+      console.error(`Erro ao obter dados de receita: ${error.message}`);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtém estatísticas de receita (método privado)
    */
   private async getRevenueStats(): Promise<any> {
     const stats = await Transaction.aggregate([

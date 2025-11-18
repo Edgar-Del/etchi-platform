@@ -9,9 +9,9 @@ import dotenv from 'dotenv';
 import { clerkMiddleware } from '@clerk/express'
 const connectDatabase = require('./config/database');
 import apiRoutes from './routes/index';
-const { errorHandler: errorMiddleware } = require('./middleware/error.middleware');
-const { notFoundMiddleware } = require('./middleware/notFound.middleware');
-const { securityMiddleware, securityHeaders } = require('./middleware/security.middleware');
+import { errorHandler as errorMiddleware } from './middleware/error.middleware';
+import { notFoundMiddleware } from './middleware/notFound.middleware';
+import { securityMiddleware, securityHeaders } from './middleware/security.middleware';
 
 
 dotenv.config();
@@ -30,6 +30,11 @@ app.use(clerkMiddleware())
 connectDatabase();
 
 // Middleware de segurança
+app.use(helmet());
+app.use(cors({
+  origin: process.env.CLIENT_URL || '*',
+  credentials: true
+}));
 app.use(securityMiddleware);
 app.use(securityHeaders);
 
@@ -72,7 +77,9 @@ io.on('connection', (socket) => {
 
 // Middleware de erro (deve ser o último)
 app.use(notFoundMiddleware);
-app.use(errorMiddleware);
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  errorMiddleware(err, req, res, next);
+});
 
 const PORT = process.env.PORT || 3000;
 

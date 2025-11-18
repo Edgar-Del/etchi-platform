@@ -1,11 +1,11 @@
-// src/routes/notifications.routes.js
-const express = require('express');
-const router = express.Router();
-const { body, param } = require('express-validator');
-const { NotificationsController } = require('../controllers/notifications.controller');
-const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
-const { handleValidationErrors } = require('../middleware/validation');
+// src/routes/notifications.routes.ts
+import express, { Router } from 'express';
+import { body, param } from 'express-validator';
+import { NotificationsController } from '../controllers/notifications.controller';
+import { authenticateJWT, authorizeRoles } from '../middleware/auth';
+import { handleValidationErrors } from '../middleware/validation';
 
+const router: Router = express.Router();
 const notificationsController = new NotificationsController();
 
 /**
@@ -121,4 +121,5 @@ router.delete('/:id',
   notificationsController.deleteNotification
 );
 
-module.exports = router;
+export default router;
+

@@ -1,11 +1,11 @@
-// src/routes/smartpoints.routes.js
-const express = require('express');
-const router = express.Router();
-const { body, param, query } = require('express-validator');
-const { SmartPointsController } = require('../controllers/smart-points.controller');
-const { authenticateJWT, authorizeRoles } = require('../middleware/auth');
-const { handleValidationErrors } = require('../middleware/validation');
+// src/routes/smartpoints.routes.ts
+import express, { Router } from 'express';
+import { body, param, query } from 'express-validator';
+import { SmartPointsController } from '../controllers/smart-points.controller';
+import { authenticateJWT, authorizeRoles } from '../middleware/auth';
+import { handleValidationErrors } from '../middleware/validation';
 
+const router: Router = express.Router();
 const smartPointsController = new SmartPointsController();
 
 /**
@@ -151,4 +151,5 @@ router.put('/:id/status',
   smartPointsController.updateSmartPointStatus
 );
 
-module.exports = router;
+export default router;
+
