@@ -448,7 +448,7 @@ export class SupportService {
   /**
    * Obtém estatísticas de tickets
    */
-  private async getTicketStats(): Promise<any> {
+  async getTicketStats(): Promise<any> {
     const stats = await SupportTicket.aggregate([
       {
         $group: {

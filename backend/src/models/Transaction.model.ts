@@ -10,7 +10,7 @@ import { PaymentMethod } from './DeliveryRequest.model';
  * @property {object} metadata - Metadados adicionais do pagamento
  */
 export interface PaymentDetails {
-  authCode: any;
+  authCode?: any;
   transactionId?: string;
   authorizationCode?: string;
   paymentGateway: string;

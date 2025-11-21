@@ -123,7 +123,7 @@ router.put('/:id',
   authenticateJWT,
   param('id').isMongoId(),
   body('name').optional().notEmpty(),
-  body('phone').optional().isMobilePhone(),
+  body('phone').optional().isMobilePhone('pt-AO'),
   handleValidationErrors,
   usersController.updateUser
 );

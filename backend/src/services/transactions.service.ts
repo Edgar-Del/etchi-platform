@@ -114,6 +114,7 @@ export class TransactionsService {
         partnerEarnings: this.calculatePartnerEarnings(amount),
         netAmount: amount,
         paymentDetails: {
+          authCode: null,
           paymentGateway: this.getPaymentGateway(paymentMethod),
         },
       };

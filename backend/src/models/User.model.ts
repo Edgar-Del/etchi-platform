@@ -60,6 +60,14 @@ export interface UserPreferences {
  * @property {Date} createdAt - Data de criação
  * @property {Date} updatedAt - Data de atualização
  */
+export interface FCMToken {
+  token: string;
+  deviceId: string;
+  platform: 'ios' | 'android';
+  lastUsed: Date;
+  createdAt: Date;
+}
+
 export interface IUser extends Document {
   travelerProfile: any;
   name: string;
@@ -76,6 +84,10 @@ export interface IUser extends Document {
   preferences: UserPreferences;
   totalDeliveries: number;
   totalSpent: number;
+  walletBalance: number;
+  fcmTokens: FCMToken[];
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
   lastActive: Date;
   createdAt: Date;
   updatedAt: Date;
@@ -269,7 +281,8 @@ userSchema.index({ lastActive: -1 });
 
 // Método para comparar password
 userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
-  return bcrypt.compare(candidatePassword, this.password);
+  const user = this as any;
+  return bcrypt.compare(candidatePassword, user.password);
 };
 
 // Método para obter perfil público
@@ -280,11 +293,12 @@ userSchema.methods.getPublicProfile = function(): PublicUserProfile {
 
 // Middleware para hash da password
 userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+  const user = this as any;
+  if (!user.isModified('password')) return next();
   
   try {
     const salt = await bcrypt.genSalt(12);
-    this.password = await bcrypt.hash(this.password, salt);
+    user.password = await bcrypt.hash(user.password, salt);
     next();
   } catch (error: any) {
     next(error);
@@ -293,7 +307,8 @@ userSchema.pre('save', async function(next) {
 
 // Virtual para nome completo (caso precise dividir nome e sobrenome no futuro)
 userSchema.virtual('firstName').get(function() {
-  return this.name.split(' ')[0];
+  const user = this as any;
+  return user.name.split(' ')[0];
 });
 
 export const User: Model<IUser> = mongoose.model<IUser>('User', userSchema);

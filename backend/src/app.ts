@@ -11,7 +11,7 @@ import { clerkMiddleware } from '@clerk/express'
 // Carregar variáveis de ambiente PRIMEIRO, antes de qualquer outra coisa
 dotenv.config();
 
-const connectDatabase = require('./config/database');
+import connectDatabase from './config/database';
 import apiRoutes from './routes/index';
 import { errorHandler as errorMiddleware } from './middleware/error.middleware';
 import { notFoundMiddleware } from './middleware/notFound.middleware';
