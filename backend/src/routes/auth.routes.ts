@@ -74,6 +74,11 @@ const authController = new AuthController();
  *               role:
  *                 type: string
  *                 enum: [client, courier]
+ *                 description: Tipo de usuário (client = customer, courier = delivery_partner). Alternativa ao userType.
+ *               userType:
+ *                 type: string
+ *                 enum: [customer, delivery_partner, smart_point_manager, admin]
+ *                 description: Tipo de usuário (alternativa ao role)
  *     responses:
  *       201:
  *         description: Utilizador registado com sucesso

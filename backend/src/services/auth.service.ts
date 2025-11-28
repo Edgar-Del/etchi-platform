@@ -11,7 +11,8 @@ export interface RegisterDto {
   phone: string;
   password: string;
   name: string;
-  userType: UserType;
+  userType?: UserType;
+  role?: 'client' | 'courier'; // Compatibilidade com API antiga
 }
 
 export interface LoginDto {
@@ -42,7 +43,18 @@ export class AuthService {
     data: { user: IUser; access_token: string } 
   }> {
     try {
-      const { email, phone, password, name, userType } = registerDto;
+      const { email, phone, password, name, userType, role } = registerDto;
+
+      // Mapear role para userType se necessário (compatibilidade)
+      let finalUserType: UserType;
+      if (userType) {
+        finalUserType = userType;
+      } else if (role) {
+        // Mapear valores antigos para novos
+        finalUserType = role === 'client' ? UserType.CUSTOMER : UserType.DELIVERY_PARTNER;
+      } else {
+        throw new Error('userType ou role é obrigatório');
+      }
 
       // Verificar se o usuário já existe
       const existingUser = await User.findOne({
@@ -53,17 +65,14 @@ export class AuthService {
         throw new Error('Email ou telefone já registado');
       }
 
-      // Hash da password
-      const hashedPassword = await bcrypt.hash(password, 12);
-
-      // Criar usuário
+      // Criar usuário (o hash da password será feito pelo middleware pre('save') do modelo)
       const user = await User.create({
         name,
         email,
         phone,
-        password: hashedPassword,
-        userType,
-        verificationStatus: userType === UserType.CUSTOMER ? 
+        password: password, // Senha em texto plano - será hasheada pelo middleware
+        userType: finalUserType,
+        verificationStatus: finalUserType === UserType.CUSTOMER ? 
           VerificationStatus.VERIFIED : VerificationStatus.PENDING,
         preferences: {
           pushNotifications: true,
@@ -124,7 +133,12 @@ export class AuthService {
         throw new Error('Conta desativada');
       }
 
+      if (!user.password) {
+        throw new Error('Credenciais inválidas - senha não configurada');
+      }
+
       const isPasswordValid = await bcrypt.compare(password, user.password);
+      
       if (!isPasswordValid) {
         throw new Error('Credenciais inválidas');
       }

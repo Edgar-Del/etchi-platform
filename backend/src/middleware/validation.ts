@@ -19,7 +19,22 @@ export const validateRegister: ValidationChain[] = [
   body('password').isLength({ min: 6 }).withMessage('Senha deve ter pelo menos 6 caracteres'),
   body('name').notEmpty().trim().withMessage('Nome é obrigatório'),
   body('phone').notEmpty().withMessage('Telefone é obrigatório'),
-  body('role').isIn(['client', 'courier']).withMessage('Role deve ser client ou courier'),
+  // Aceitar role (client/courier) ou userType (customer/delivery_partner/etc)
+  body('role')
+    .optional()
+    .isIn(['client', 'courier'])
+    .withMessage('Role deve ser client ou courier'),
+  body('userType')
+    .optional()
+    .isIn(['customer', 'delivery_partner', 'smart_point_manager', 'admin'])
+    .withMessage('userType inválido'),
+  // Validar que pelo menos um dos dois seja fornecido
+  body().custom((value) => {
+    if (!value.role && !value.userType) {
+      throw new Error('role ou userType é obrigatório');
+    }
+    return true;
+  }),
 ];
 
 export const validateLogin: ValidationChain[] = [

@@ -6,7 +6,7 @@ import compression from 'compression';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
-import { clerkMiddleware } from '@clerk/express'
+// import { clerkMiddleware } from '@clerk/express' // Desabilitado - requer configuração
 
 // Carregar variáveis de ambiente PRIMEIRO, antes de qualquer outra coisa
 dotenv.config();
@@ -25,7 +25,8 @@ const io = new Server(server, {
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
   }
 });
-app.use(clerkMiddleware())
+// Clerk middleware desabilitado temporariamente - requer configuração de chaves
+// app.use(clerkMiddleware())
 
 // Conectar ao banco de dados
 connectDatabase();

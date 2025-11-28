@@ -1,0 +1,59 @@
+### Exemplos de Requisições da API Etchi
+### Use estas URLs corretas para testar a API
+
+### Base URL
+@baseUrl = http://localhost:3000
+
+### ============================================
+### AUTENTICAÇÃO
+### ============================================
+
+### Registrar novo usuário
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "usuario@etchi.ao",
+  "password": "Senha123!",
+  "name": "João Silva",
+  "phone": "+244923456789",
+  "role": "client"
+}
+
+### Login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "usuario@etchi.ao",
+  "password": "Senha123!"
+}
+
+### Obter perfil do usuário autenticado
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer SEU_TOKEN_AQUI
+
+### ============================================
+### HEALTH CHECK
+### ============================================
+
+### Verificar saúde da API
+GET {{baseUrl}}/health
+
+### Verificar saúde da API (rota da API)
+GET {{baseUrl}}/api/health
+
+### ============================================
+### NOTAS IMPORTANTES:
+### ============================================
+### 
+### ✅ URL CORRETA: http://localhost:3000/api/auth/register
+### ❌ URL INCORRETA: http://localhost:3000/api/api/auth/register
+###
+### O servidor já adiciona o prefixo "/api" automaticamente,
+### então você só precisa usar "/api/auth/register" após o baseUrl
+###
+### Se você configurar baseUrl = http://localhost:3000/api
+### Então use apenas: /auth/register (sem o /api)
+###
+
