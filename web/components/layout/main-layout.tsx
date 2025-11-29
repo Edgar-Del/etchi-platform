@@ -27,11 +27,13 @@ export function MainLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
       {/* Navbar */}
-      <nav className="border-b bg-card">
+      <nav className="border-b bg-card/95 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center gap-8">
-              <Logo />
+              <Link href="/dashboard">
+                <Logo size="md" variant="color" />
+              </Link>
               <div className="hidden md:flex gap-1">
                 {navigation.map((item) => {
                   const Icon = item.icon

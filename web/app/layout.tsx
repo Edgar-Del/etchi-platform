@@ -7,7 +7,17 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Etchi - Entregas Colaborativas',
-  description: 'Plataforma de entregas colaborativas',
+  description: 'Plataforma de entregas colaborativas em Angola',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/assets/icons/etchi_icon.png',
+    apple: '/assets/icons/etchi_icon.png',
+  },
+  openGraph: {
+    title: 'Etchi - Entregas Colaborativas',
+    description: 'Plataforma de entregas colaborativas em Angola',
+    images: ['/assets/logos/etchi_logo_noBG.png'],
+  },
 }
 
 export default function RootLayout({

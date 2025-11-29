@@ -56,50 +56,71 @@ export default function DashboardPage() {
 
   return (
     <div className="container mx-auto py-8 px-4">
+      {/* Welcome Section */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground mt-2">Bem-vindo, {user?.name}!</p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+              Dashboard
+            </h1>
+            <p className="text-muted-foreground mt-2 text-lg">
+              Bem-vindo de volta, <span className="font-semibold text-foreground">{user?.name}</span>!
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card>
+        <Card className="border-2 hover:border-primary/50 transition-colors hover:shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total</CardTitle>
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Package className="h-5 w-5 text-primary" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
+            <div className="text-3xl font-bold">{stats.total}</div>
+            <p className="text-xs text-muted-foreground mt-1">entregas</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-2 hover:border-yellow-500/50 transition-colors hover:shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-            <Clock className="h-4 w-4 text-yellow-500" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Pendentes</CardTitle>
+            <div className="h-10 w-10 rounded-full bg-yellow-500/10 flex items-center justify-center">
+              <Clock className="h-5 w-5 text-yellow-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.pending}</div>
+            <div className="text-3xl font-bold">{stats.pending}</div>
+            <p className="text-xs text-muted-foreground mt-1">aguardando</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-2 hover:border-blue-500/50 transition-colors hover:shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Em Trânsito</CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-500" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Em Trânsito</CardTitle>
+            <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center">
+              <TrendingUp className="h-5 w-5 text-blue-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.inTransit}</div>
+            <div className="text-3xl font-bold">{stats.inTransit}</div>
+            <p className="text-xs text-muted-foreground mt-1">a caminho</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-2 hover:border-green-500/50 transition-colors hover:shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Entregues</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-500" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Entregues</CardTitle>
+            <div className="h-10 w-10 rounded-full bg-green-500/10 flex items-center justify-center">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.delivered}</div>
+            <div className="text-3xl font-bold">{stats.delivered}</div>
+            <p className="text-xs text-muted-foreground mt-1">concluídas</p>
           </CardContent>
         </Card>
       </div>

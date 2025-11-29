@@ -4,26 +4,26 @@ import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { useState } from 'react'
 
-interface LogoProps {
-  className?: string
-  size?: 'sm' | 'md' | 'lg' | 'xl'
+interface LogoImageProps {
   variant?: 'light' | 'dark' | 'color'
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  className?: string
   showText?: boolean
 }
 
 const sizeMap = {
-  sm: { width: 24, height: 24, text: 'text-sm' },
-  md: { width: 32, height: 32, text: 'text-lg' },
-  lg: { width: 48, height: 48, text: 'text-xl' },
-  xl: { width: 64, height: 64, text: 'text-2xl' },
+  sm: { width: 32, height: 32, text: 'text-sm' },
+  md: { width: 48, height: 48, text: 'text-lg' },
+  lg: { width: 64, height: 64, text: 'text-xl' },
+  xl: { width: 96, height: 96, text: 'text-2xl' },
 }
 
-export function Logo({
-  className,
-  size = 'md',
+export function LogoImage({
   variant = 'color',
+  size = 'md',
+  className,
   showText = true,
-}: LogoProps) {
+}: LogoImageProps) {
   const [isLoading, setIsLoading] = useState(true)
 
   const getImageSrc = () => {
@@ -31,6 +31,7 @@ export function Logo({
       case 'dark':
         return '/assets/logos/etchi_white_noBG.png'
       case 'light':
+        return '/assets/logos/etchi_logo_noBG.png'
       case 'color':
       default:
         return '/assets/logos/etchi_logo_noBG.png'
@@ -43,8 +44,8 @@ export function Logo({
     <div className={cn('flex items-center gap-3', className)}>
       <div className="relative flex-shrink-0">
         {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-muted/50 animate-pulse rounded-lg">
-            <div className="h-3 w-3 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center bg-muted animate-pulse rounded-lg">
+            <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         )}
         <Image
@@ -53,7 +54,7 @@ export function Logo({
           width={dimensions.width}
           height={dimensions.height}
           className={cn(
-            'transition-opacity duration-300 object-contain',
+            'transition-opacity duration-300',
             isLoading ? 'opacity-0' : 'opacity-100'
           )}
           priority
@@ -77,4 +78,5 @@ export function Logo({
     </div>
   )
 }
+
 

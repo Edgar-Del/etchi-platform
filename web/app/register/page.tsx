@@ -39,22 +39,31 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-primary-50 p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 text-center">
-          <div className="flex justify-center mb-4">
-            <Logo size="lg" />
-          </div>
-          <CardTitle className="text-3xl font-bold">Crie sua conta</CardTitle>
-          <CardDescription>
-            Ou{' '}
-            <Link href="/login" className="text-primary hover:underline font-medium">
-              faça login
-            </Link>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-white to-primary/5 p-4 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/10 rounded-full blur-3xl"></div>
+      </div>
+
+      <div className="relative z-10 w-full max-w-md">
+        <Card className="backdrop-blur-sm bg-white/95 shadow-2xl border-0">
+          <CardHeader className="space-y-1 text-center pb-6">
+            <div className="flex justify-center mb-6">
+              <Logo size="xl" variant="color" />
+            </div>
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/80 bg-clip-text text-transparent">
+              Crie sua conta
+            </CardTitle>
+            <CardDescription className="text-base mt-2">
+              Ou{' '}
+              <Link href="/login" className="text-primary hover:underline font-medium">
+                faça login
+              </Link>
+            </CardDescription>
+            </CardHeader>
+          <CardContent className="pt-0">
+            <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
                 {error}
@@ -159,12 +168,13 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Criando conta...' : 'Criar conta'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+              <Button type="submit" className="w-full h-11 text-base font-semibold" disabled={loading}>
+                {loading ? 'Criando conta...' : 'Criar conta'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
